@@ -5,8 +5,8 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 if [[ -z "${ES_HOME}" ]]; then
-  echo "Where is elasticsearch-plugin installed (e.g. /usr/share/elasticsearch/bin)?"
-  read ES_PLUGIN_DIR
+  read -p "Enter the elasticsearch-plugin installation path (default: /usr/share/elasticsearch/bin):" ES_PLUGIN_DIR
+  ES_PLUGIN_DIR=${ES_PLUGIN_DIR:-/usr/share/elasticsearch/bin}
 else
   ES_PLUGIN_DIR="${ES_HOME}/bin"
 fi
