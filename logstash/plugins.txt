@@ -1,0 +1,3 @@
+logstash-input-jdbc
+logstash-output-elasticsearch
+logstash-filter-json

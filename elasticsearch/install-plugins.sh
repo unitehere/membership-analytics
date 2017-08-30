@@ -15,3 +15,5 @@ cd $ES_PLUGIN_DIR
 ./elasticsearch-plugin install analysis-phonetic
 
 cd -
+
+service elasticsearch restart
