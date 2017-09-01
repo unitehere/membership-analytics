@@ -33,7 +33,7 @@ SELECT n.id, STUFF(
       SELECT ', {' +
       '"imis_seqn": "' + COALESCE(convert(varchar(50),a1.SEQN),'') + '",' +
       '"team": "' + COALESCE(a1.TEAM,'') + '",' +
-      '"preferred": "' + COALESCE(convert(varchar(1),a1.PREFERRED),'') + '",' +
+      '"preferred": ' + COALESCE(convert(varchar(1),a1.PREFERRED),'') + ',' +
       '"address_type": "' + COALESCE(a1.ADDRESS_TYPE,'') + '",' +
       '"address_1": "' + COALESCE(a1.ADDRESS_1,'') + '",' +
       '"address_2": "' + COALESCE(a1.ADDRESS_2,'') + '",' +
@@ -43,7 +43,7 @@ SELECT n.id, STUFF(
       '"zip": "' + COALESCE(a1.ZIP,'') + '",' + 
       '"country": "' + COALESCE(a1.COUNTRY,'') + '",' +
       '"note": "' + COALESCE(a1.NOTE,'') + '",' +
-      '"validated": "' + COALESCE(convert(varchar(1), a1.VALIDATED),'') + '"' + 
+      '"validated": ' + COALESCE(convert(varchar(1), a1.VALIDATED),'') + 
       '}'
   FROM dbo.UH_ADDRESS a1
   WHERE a1.id = n.id
@@ -56,12 +56,12 @@ SELECT n.id, STUFF(
         SELECT ',  {' +
         '"imis_seqn": "' + COALESCE(convert(varchar(50),e1.SEQN),'') + '",' +
         '"team": "' + COALESCE(e1.TEAM,'') + '",' +
-        '"preferred": "' + COALESCE(convert(varchar(50),e1.PREFERRED),'') + '",' +
+        '"preferred": ' + COALESCE(convert(varchar(50),e1.PREFERRED),'') + ',' +
         '"email_type": "' + COALESCE(e1.EMAIL_TYPE,'') + '",' +
         '"email": "' + COALESCE(e1.EMAIL,'') + '",' + 
         '"note": "' + COALESCE(e1.NOTE,'') + '",' +
         '"bad": "' + COALESCE(convert(varchar(50), e1.BAD, 121),'') + '",' +
-        '"permission_to_email": "' + COALESCE(e1.PERMISSION_TO_EMAIL,'') + '"' +
+        '"permission_to_email": ' + COALESCE(e1.PERMISSION_TO_EMAIL,'') +
         '}'
   FROM dbo.UH_EMAIL e1
   WHERE e1.id = n.id
@@ -74,7 +74,7 @@ SELECT n.id, STUFF(
           SELECT ', {' +
           '"imis_seqn": "' + COALESCE(convert(varchar(50),p1.SEQN),'') + '",' +
           '"team": "' + COALESCE(p1.TEAM,'') + '",' +
-          '"preferred": "' + COALESCE(convert(varchar(50),p1.PREFERRED),'') + '",' +
+          '"preferred": ' + COALESCE(convert(varchar(50),p1.PREFERRED),'') + ',' +
           '"phone_type": "' + COALESCE(p1.PHONE_TYPE,'') + '",' +
           '"phone": "' + COALESCE(p1.PHONE,'') + '",' + 
           '"optin_text": "' + COALESCE(p1.OPTIN_TEXT,'') + '",' +
@@ -97,7 +97,7 @@ SELECT n.id, STUFF(
             '"employer_name": "' + STRING_ESCAPE(COALESCE(q1.EMPLOYER_NAME,''), 'json') + '",' +
             '"employer_id": "' + COALESCE(q1.EMPLOYER_ID,'') + '",' +
             '"employee_id": "' + COALESCE(q1.EMPLOYEE_ID,'') + '",' +
-            '"primary_employer": "' + COALESCE(CONVERT(varchar(1), q1.PRIMARY_EMPLOYER),'') + '",' + 
+            '"primary_employer": ' + COALESCE(CONVERT(varchar(1), q1.PRIMARY_EMPLOYER),'') + ',' + 
             '"effective_date": "' + COALESCE(convert(varchar(50), q1.EFFECTIVE_DATE, 121),'') + '",' +
             '"thru_date": "' + COALESCE(convert(varchar(50), q1.THRU_DATE, 121),'') + '",' +
             '"classification": "' + COALESCE(q1.CLASSIFICATION,'') + '",' +

@@ -1,0 +1,108 @@
+// PUT _template/member_template
+{
+  "template": "members-*",
+  "mappings": {
+    "member": {
+      "properties": {
+        "category": { "type": "keyword" },
+        "chapter": { "type": "keyword" },
+        "company": { "type": "keyword" },
+        "designation": { "type": "keyword" },
+        "first_name": { "type": "text" },
+        "functional_title": { "type": "text" },
+        "id": { "type": "keyword" },
+        "imis_id": { "type": "keyword" },
+        "join_date": { "type": "date" },
+        "last_name": { "type": "text" },
+        "member_status": { "type": "keyword" },
+        "member_status_date": { "type": "date" },
+        "member_type": { "type": "keyword" },
+        "middle_name": { "type": "text" },
+        "org_code": { "type": "keyword" },
+        "prefix": { "type": "text" },
+        "status": { "type": "keyword" },
+        "suffix": { "type": "text" },
+        "title": { "type": "text" },
+        "addresses": {
+          "properties": {
+            "address_1": { "type": "text" },
+            "address_2": { "type": "text" },
+            "address_3": { "type": "text" },
+            "address_type": { "type": "text" },
+            "city": { "type": "text" },
+            "country": { "type": "text" },
+            "imis_seqn": { "type": "keyword" },
+            "note": { "type": "text" },
+            "preferred": { "type": "boolean" },
+            "state_province": { "type": "keyword" },
+            "team": { "type": "keyword" },
+            "validated": { "type": "boolean" },
+            "zip": { "type": "keyword" }
+          }
+        },
+        "demographics": {
+          "properties": {
+            "city_origin": { "type": "text" },
+            "city_origin_src": { "type": "text" },
+            "country_origin": { "type": "text" },
+            "country_origin_src": { "type": "text" },
+            "ethnicity": { "type": "keyword" },
+            "ethnicity_src": { "type": "text" },
+            "gender": { "type": "keyword" },
+            "gender_src": { "type": "text" },
+            "other_gender": { "type": "text" },
+            "other_language": { "type": "keyword" },
+            "other_language_src": { "type": "text" },
+            "primary_language": { "type": "keyword" },
+            "primary_language_src": { "type": "text" },
+            "ssn": { "type": "text" },
+            "ssn_src": { "type": "text" }
+          }
+        },
+        "emails": {
+          "properties": {
+            "bad": { "type": "boolean" },
+            "email": { "type": "text" },
+            "email_type": { "type": "keyword" },
+            "imis_seqn": { "type": "keyword" },
+            "note": { "type": "text" },
+            "permission_to_email": { "type": "boolean" },
+            "preferred": { "type": "boolean" },
+            "team": { "type": "keyword" }
+          }
+        },
+        "employers": {
+          "properties": {
+            "classification": { "type": "keyword" },
+            "dept": { "type": "keyword" },
+            "effective_date": { "type": "date" },
+            "employee_id": { "type": "text" },
+            "employer_id": { "type": "keyword" },
+            "employer_name": { "type": "text" },
+            "imis_seqn": { "type": "keyword" },
+            "location": { "type": "text" },
+            "primary_employer": { "type": "boolean" },
+            "shift": { "type": "keyword" },
+            "thru_date": { "type": "date" },
+            "work_hours": { "type": "text" }
+          }
+        },
+        "phone_numbers": {
+          "properties": {
+            "contact_time": { "type": "text" },
+            "extension": { "type": "keyword" },
+            "imis_seqn": { "type": "keyword" },
+            "notes": { "type": "text" },
+            "optin_text": { "type": "text" },
+            "permiss_to_text_date": { "type": "date" },
+            "permiss_to_text_source": { "type": "text" },
+            "phone": { "type": "text" },
+            "phone_type": { "type": "keyword" },
+            "preferred": { "type": "boolean" },
+            "team": { "type": "keyword" }
+          }
+        }
+      }
+    }
+  }  
+}
