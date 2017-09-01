@@ -1,13 +1,15 @@
+use UNITEUAT;
+
 SELECT n.id, '[' + STUFF(
   (
-    SELECT '  {' +
+    SELECT ', {' +
     '"ID": "' + n1.ID + '",' +
     '"ORG_CODE": "' + COALESCE(n1.ORG_CODE,'') + '",' +
     '"MEMBER_TYPE": "' + COALESCE(n1.MEMBER_TYPE,'') + '",' +
     '"CATEGORY": "' + COALESCE(n1.CATEGORY,'') + '",' +
     '"STATUS": "' + COALESCE(n1.[STATUS],'') + '",' +
     '"TITLE": "' + COALESCE(n1.TITLE,'') + '",' +
-    '"COMPANY": "' + COALESCE(n1.COMPANY,'') + '",' +
+    '"COMPANY": "' + STRING_ESCAPE(COALESCE(n1.COMPANY,''), 'json') + '",' +
     '"PREFIX": "' + COALESCE(n1.PREFIX,'') + '",' +
     '"FIRST_NAME": "' + COALESCE(n1.FIRST_NAME,'') + '",' +
     '"MIDDLE_NAME": "' + COALESCE(MIDDLE_NAME,'') + '",' +
@@ -19,7 +21,7 @@ SELECT n.id, '[' + STUFF(
     '"JOIN_DATE": "' + COALESCE(convert(varchar(50), n1.JOIN_DATE),'') + '",' + 
     '"MEMBER_STATUS": "' + COALESCE(n1.MEMBER_STATUS,'') + '",' +
     '"MEMBER_STATUS_DATE": "' + COALESCE(convert(varchar(50), n1.MEMBER_STATUS_DATE),'') + '"' +
-    '},'
+    '}'
   FROM dbo.Name n1
   WHERE n1.id = n.id
   ORDER BY n1.id
@@ -28,7 +30,7 @@ SELECT n.id, '[' + STUFF(
     , 1, 2, '') + ']' AS name_array,
   '[' + STUFF(
     (
-      SELECT '  {' +
+      SELECT ', {' +
       '"ID": "' + a1.ID + '",' +
       '"SEQN": "' + COALESCE(convert(varchar(50),a1.SEQN),'') + '",' +
       '"TEAM": "' + COALESCE(a1.TEAM,'') + '",' +
@@ -43,7 +45,7 @@ SELECT n.id, '[' + STUFF(
       '"COUNTRY": "' + COALESCE(a1.COUNTRY,'') + '",' +
       '"NOTE": "' + COALESCE(a1.NOTE,'') + '",' +
       '"VALIDATED": "' + COALESCE(convert(varchar(1), a1.VALIDATED),'') + '"' + 
-      '},'
+      '}'
   FROM dbo.UH_ADDRESS a1
   WHERE a1.id = n.id
   ORDER BY a1.id
@@ -52,7 +54,7 @@ SELECT n.id, '[' + STUFF(
       , 1, 2, '') + ']' AS address_array,
   '[' + STUFF(
       (
-        SELECT '  {' +
+        SELECT ',  {' +
         '"ID": "' + e1.ID + '",' +
         '"SEQN": "' + COALESCE(convert(varchar(50),e1.SEQN),'') + '",' +
         '"TEAM": "' + COALESCE(e1.TEAM,'') + '",' +
@@ -61,8 +63,8 @@ SELECT n.id, '[' + STUFF(
         '"EMAIL": "' + COALESCE(e1.EMAIL,'') + '",' + 
         '"NOTE": "' + COALESCE(e1.NOTE,'') + '",' +
         '"BAD": "' + COALESCE(convert(varchar(50), e1.BAD, 121),'') + '",' +
-        '"PERMISSION_TO_EMAIL": "' + COALESCE(e1.PERMISSION_TO_EMAIL,'') + '",' +
-        '},'
+        '"PERMISSION_TO_EMAIL": "' + COALESCE(e1.PERMISSION_TO_EMAIL,'') + '"' +
+        '}'
   FROM dbo.UH_EMAIL e1
   WHERE e1.id = n.id
   ORDER BY e1.id
@@ -71,7 +73,7 @@ SELECT n.id, '[' + STUFF(
         , 1, 2, '') + ']' AS email_array,
   '[' + STUFF(
         (
-          SELECT '  {' +
+          SELECT ', {' +
           '"ID": "' + p1.ID + '",' +
           '"SEQN": "' + COALESCE(convert(varchar(50),p1.SEQN),'') + '",' +
           '"TEAM": "' + COALESCE(p1.TEAM,'') + '",' +
@@ -84,7 +86,7 @@ SELECT n.id, '[' + STUFF(
           '"PERMISS_TO_TEXT_DATE": "' + COALESCE(convert(varchar(50), p1.PERMISS_TO_TEXT_DATE, 121),'') + '",' +
           '"PERMISS_TO_TEXT_SOURCE": "' + COALESCE(p1.PERMISS_TO_TEXT_SOURCE,'') + '",' +
           '"EXTENSION": "' + COALESCE(p1.EXTENSION,'') + '"' +
-          '},'
+          '}'
   FROM dbo.UH_PHONE p1
   WHERE p1.id = n.id
   ORDER BY p1.id
@@ -93,10 +95,10 @@ SELECT n.id, '[' + STUFF(
           , 1, 2, '') + ']' AS phone_array,
   '[' + STUFF(
           (
-            SELECT '  {' +
+            SELECT ', {' +
             '"ID": "' + q1.ID + '",' +
             '"SEQN": "' + COALESCE(convert(varchar(50),q1.SEQN),'') + '",' +
-            '"EMPLOYER_NAME": "' + COALESCE(q1.EMPLOYER_NAME,'') + '",' +
+            '"EMPLOYER_NAME": "' + STRING_ESCAPE(COALESCE(q1.EMPLOYER_NAME,''), 'json') + '",' +
             '"EMPLOYER_ID": "' + COALESCE(q1.EMPLOYER_ID,'') + '",' +
             '"EMPLOYEE_ID": "' + COALESCE(q1.EMPLOYEE_ID,'') + '",' +
             '"PRIMARY_EMPLOYER": "' + COALESCE(CONVERT(varchar(1), q1.PRIMARY_EMPLOYER),'') + '",' + 
@@ -107,7 +109,7 @@ SELECT n.id, '[' + STUFF(
             '"DEPT": "' + COALESCE(q1.DEPT,'') + '",' +
             '"SHIFT": "' + COALESCE(q1.[SHIFT],'') + '",' +
             '"WORK_HOURS": "' + COALESCE(q1.WORK_HOURS,'') + '"' + 
-            '},'
+            '}'
   FROM dbo.UH_EMPLOYER q1
   WHERE q1.id = n.id
   ORDER BY q1.id
@@ -116,7 +118,7 @@ SELECT n.id, '[' + STUFF(
             , 1, 2, '') + ']' AS employer_array,
   '[' + STUFF(
             (
-              SELECT '  {' +
+              SELECT ', {' +
               '"ID": "' + d1.ID + '",' +
               '"SSN": "' + COALESCE(d1.SSN,'') + '",' +
               '"SSN_SRC": "' + COALESCE(d1.SSN_SRC,'') + '",' +
@@ -133,7 +135,7 @@ SELECT n.id, '[' + STUFF(
               '"GENDER": "' + COALESCE(d1.GENDER,'') + '",' +
               '"GENDER_SRC": "' + COALESCE(d1.GENDER_SRC,'') + '",' +
               '"OTHER_GENDER": "' + COALESCE(d1.OTHER_GENDER,'') + '"' + 
-              '},'
+              '}'
   FROM dbo.UH_DEMO d1
   WHERE d1.id = n.id
   ORDER BY d1.id
