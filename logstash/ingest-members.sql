@@ -18,9 +18,7 @@ SELECT n.id, STUFF(
     '"designation": "' + COALESCE(n1.DESIGNATION,'') + '",' +
     '"chapter": "' + COALESCE(n1.CHAPTER,'') + '",' +
     '"functional_title": "' + COALESCE(n1.FUNCTIONAL_TITLE,'') + '",' +
-    '"join_date": "' + COALESCE(convert(varchar(50), n1.JOIN_DATE),'') + '",' + 
-    '"member_status": "' + COALESCE(n1.MEMBER_STATUS,'') + '",' +
-    '"member_status_date": "' + COALESCE(convert(varchar(50), n1.MEMBER_STATUS_DATE),'') + '"' +
+    '"member_status": "' + COALESCE(n1.MEMBER_STATUS,'') + '"' +
     '}'
   FROM dbo.Name n1
   WHERE n1.id = n.id
@@ -61,7 +59,7 @@ SELECT n.id, STUFF(
         '"email": "' + COALESCE(e1.EMAIL,'') + '",' + 
         '"note": "' + COALESCE(e1.NOTE,'') + '",' +
         '"bad": "' + COALESCE(convert(varchar(50), e1.BAD, 121),'') + '",' +
-        '"permission_to_email": ' + COALESCE(e1.PERMISSION_TO_EMAIL,'') +
+        '"permission_to_email": "' + COALESCE(e1.PERMISSION_TO_EMAIL,'') + '"' +
         '}'
   FROM dbo.UH_EMAIL e1
   WHERE e1.id = n.id
@@ -80,7 +78,7 @@ SELECT n.id, STUFF(
           '"optin_text": "' + COALESCE(p1.OPTIN_TEXT,'') + '",' +
           '"contact_time": "' + COALESCE(p1.CONTACT_TIME,'') + '",' +
           '"notes": "' + COALESCE(p1.NOTES,'') + '",' +
-          '"permiss_to_text_date": "' + COALESCE(convert(varchar(50), p1.PERMISS_TO_TEXT_DATE, 121),'') + '",' +
+           COALESCE('"permiss_to_text_date": "' +convert(varchar(50), p1.PERMISS_TO_TEXT_DATE, 121) + '",','') +
           '"permiss_to_text_source": "' + COALESCE(p1.PERMISS_TO_TEXT_SOURCE,'') + '",' +
           '"extension": "' + COALESCE(p1.EXTENSION,'') + '"' +
           '}'
@@ -98,8 +96,8 @@ SELECT n.id, STUFF(
             '"employer_id": "' + COALESCE(q1.EMPLOYER_ID,'') + '",' +
             '"employee_id": "' + COALESCE(q1.EMPLOYEE_ID,'') + '",' +
             '"primary_employer": ' + COALESCE(CONVERT(varchar(1), q1.PRIMARY_EMPLOYER),'') + ',' + 
-            '"effective_date": "' + COALESCE(convert(varchar(50), q1.EFFECTIVE_DATE, 121),'') + '",' +
-            '"thru_date": "' + COALESCE(convert(varchar(50), q1.THRU_DATE, 121),'') + '",' +
+            COALESCE('"effective_date": "' + convert(varchar(50), q1.EFFECTIVE_DATE, 121) + '",','') +
+            COALESCE('"thru_date": "' + convert(varchar(50), q1.THRU_DATE, 121) + '",','') +
             '"classification": "' + COALESCE(q1.CLASSIFICATION,'') + '",' +
             '"location": "' + COALESCE(q1.[LOCATION],'') + '",' +
             '"dept": "' + COALESCE(q1.DEPT,'') + '",' +
