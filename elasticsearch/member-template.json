@@ -1,6 +1,24 @@
 // PUT _template/member_template
 {
   "template": "members-*",
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "double_metaphone": {
+            "tokenizer": "whitespace",
+            "filter":    ["lowercase", "double_metaphone"]
+          }
+        },
+        "filter": {
+          "double_metaphone": {
+            "type":    "phonetic",
+            "encoder": "double_metaphone"
+          }
+        }
+      }
+    }
+  },
   "mappings": {
     "member": {
       "properties": {
@@ -15,11 +33,27 @@
         "chapter": { "type": "keyword" },
         "company": { "type": "keyword" },
         "designation": { "type": "keyword" },
-        "first_name": { "type": "text" },
+        "first_name": { 
+          "type": "text",
+          "fields": {
+            "phonetic": {
+              "type":     "text",
+              "analyzer": "double_metaphone"
+            }
+          }
+        },
         "functional_title": { "type": "text" },
         "id": { "type": "keyword" },
         "imis_id": { "type": "keyword" },
-        "last_name": { "type": "text" },
+        "last_name": {
+          "type": "text",
+          "fields": {
+            "phonetic": {
+              "type":     "text",
+              "analyzer": "double_metaphone"
+            }
+          }
+        },
         "member_status": { "type": "keyword" },
         "member_type": { "type": "keyword" },
         "middle_name": { "type": "text" },
