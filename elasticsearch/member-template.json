@@ -1,6 +1,9 @@
 // PUT _template/member_template
 {
   "template": "members-*",
+  "aliases": {
+    "members" : {}
+  },
   "settings": {
     "index": {
       "analysis": {
