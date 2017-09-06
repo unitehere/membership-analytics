@@ -3,7 +3,6 @@ use UNITEUAT;
 SELECT n.id, STUFF(
   (
     SELECT ', {' +
-    '"imis_id": "' + n1.ID + '",' +
     CASE WHEN n1.ORG_CODE IS NULL OR n1.ORG_CODE = '' THEN '' ELSE '"org_code": "' + COALESCE(n1.ORG_CODE,'') + '",' END +
     CASE WHEN n1.MEMBER_TYPE IS NULL OR n1.MEMBER_TYPE = '' THEN '' ELSE '"member_type": "' + COALESCE(n1.MEMBER_TYPE,'') + '",' END +
     CASE WHEN n1.CATEGORY IS NULL OR n1.CATEGORY = '' THEN '' ELSE '"category": "' + COALESCE(n1.CATEGORY,'') + '",' END +
@@ -18,8 +17,9 @@ SELECT n.id, STUFF(
     CASE WHEN n1.DESIGNATION IS NULL OR n1.DESIGNATION = '' THEN '' ELSE '"designation": "' + COALESCE(n1.DESIGNATION,'') + '",' END +
     CASE WHEN n1.CHAPTER IS NULL OR n1.CHAPTER = '' THEN '' ELSE '"chapter": "' + COALESCE(n1.CHAPTER,'') + '",' END +
     CASE WHEN n1.FUNCTIONAL_TITLE IS NULL OR n1.FUNCTIONAL_TITLE = '' THEN '' ELSE '"functional_title": "' + COALESCE(n1.FUNCTIONAL_TITLE,'') + '",' END +
-    CASE WHEN n1.MEMBER_STATUS IS NULL OR n1.MEMBER_STATUS = '' THEN '' ELSE '"member_status": "' + COALESCE(n1.MEMBER_STATUS,'') + '"' END +
-    '}'
+    CASE WHEN n1.MEMBER_STATUS IS NULL OR n1.MEMBER_STATUS = '' THEN '' ELSE '"member_status": "' + COALESCE(n1.MEMBER_STATUS,'') + '",' END +
+    '"imis_id": "' + n1.ID + '"' +
+	'}'
   FROM dbo.Name n1
   WHERE n1.id = n.id
   ORDER BY n1.id
@@ -29,7 +29,6 @@ SELECT n.id, STUFF(
   '[' + STUFF(
     (
       SELECT ', {' +
-      '"imis_seqn": "' + COALESCE(convert(varchar(50),a1.SEQN),'') + '",' +
       CASE WHEN a1.TEAM IS NULL OR a1.TEAM = '' THEN '' ELSE '"team": "' + COALESCE(a1.TEAM,'') + '",' END +
       CASE WHEN a1.PREFERRED IS NULL OR a1.PREFERRED = '' THEN '' ELSE '"preferred": ' + COALESCE(convert(varchar(1),a1.PREFERRED),'') + ',' END +
       CASE WHEN a1.ADDRESS_TYPE IS NULL OR a1.ADDRESS_TYPE = '' THEN '' ELSE '"address_type": "' + COALESCE(a1.ADDRESS_TYPE,'') + '",' END +
@@ -41,8 +40,9 @@ SELECT n.id, STUFF(
       CASE WHEN a1.ZIP IS NULL OR a1.ZIP = '' THEN '' ELSE '"zip": "' + COALESCE(a1.ZIP,'') + '",' END + 
       CASE WHEN a1.COUNTRY IS NULL OR a1.COUNTRY = '' THEN '' ELSE '"country": "' + COALESCE(a1.COUNTRY,'') + '",' END +
       CASE WHEN a1.NOTE IS NULL OR a1.NOTE = '' THEN '' ELSE '"note": "' + COALESCE(a1.NOTE,'') + '",' END +
-      CASE WHEN a1.VALIDATED IS NULL OR a1.VALIDATED = '' THEN '' ELSE '"validated": ' + COALESCE(convert(varchar(1), a1.VALIDATED),'') END + 
-      '}'
+      CASE WHEN a1.VALIDATED IS NULL OR a1.VALIDATED = '' THEN '' ELSE '"validated": ' + COALESCE(convert(varchar(1), a1.VALIDATED),'') + ',' END + 
+      '"imis_seqn": "' + COALESCE(convert(varchar(50),a1.SEQN),'') + '"' +
+	  '}'
   FROM dbo.UH_ADDRESS a1
   WHERE a1.id = n.id
   ORDER BY a1.id
@@ -52,15 +52,15 @@ SELECT n.id, STUFF(
   '[' + STUFF(
       (
         SELECT ',  {' +
-        '"imis_seqn": "' + COALESCE(convert(varchar(50),e1.SEQN),'') + '",' +
         CASE WHEN e1.TEAM IS NULL OR e1.TEAM = '' THEN '' ELSE '"team": "' + COALESCE(e1.TEAM,'') + '",' END +
         CASE WHEN e1.PREFERRED IS NULL OR e1.PREFERRED = '' THEN '' ELSE '"preferred": ' + COALESCE(convert(varchar(50),e1.PREFERRED),'') + ',' END +
         CASE WHEN e1.EMAIL_TYPE IS NULL OR e1.EMAIL_TYPE = '' THEN '' ELSE '"email_type": "' + COALESCE(e1.EMAIL_TYPE,'') + '",' END +
         CASE WHEN e1.EMAIL IS NULL OR e1.EMAIL = '' THEN '' ELSE '"email": "' + COALESCE(e1.EMAIL,'') + '",' END + 
         CASE WHEN e1.NOTE IS NULL OR e1.NOTE = '' THEN '' ELSE '"note": "' + COALESCE(e1.NOTE,'') + '",' END +
         CASE WHEN e1.BAD IS NULL OR e1.BAD = '' THEN '' ELSE '"bad": "' + COALESCE(convert(varchar(50), e1.BAD, 121),'') + '",' END +
-        CASE WHEN e1.PERMISSION_TO_EMAIL IS NULL OR e1.PERMISSION_TO_EMAIL = '' THEN '' ELSE '"permission_to_email": "' + COALESCE(e1.PERMISSION_TO_EMAIL,'') + '"' END +
-        '}'
+        CASE WHEN e1.PERMISSION_TO_EMAIL IS NULL OR e1.PERMISSION_TO_EMAIL = '' THEN '' ELSE '"permission_to_email": "' + COALESCE(e1.PERMISSION_TO_EMAIL,'') + '",' END +
+        '"imis_seqn": "' + COALESCE(convert(varchar(50),e1.SEQN),'') + '"' +
+		'}'
   FROM dbo.UH_EMAIL e1
   WHERE e1.id = n.id
   ORDER BY e1.id
@@ -70,7 +70,6 @@ SELECT n.id, STUFF(
   '[' + STUFF(
         (
           SELECT ', {' +
-          '"imis_seqn": "' + COALESCE(convert(varchar(50),p1.SEQN),'') + '",' +
           CASE WHEN p1.TEAM IS NULL OR p1.TEAM = '' THEN '' ELSE '"team": "' + COALESCE(p1.TEAM,'') + '",' END +
           CASE WHEN p1.PREFERRED IS NULL OR p1.PREFERRED = '' THEN '' ELSE '"preferred": ' + COALESCE(convert(varchar(50),p1.PREFERRED),'') + ',' END +
           CASE WHEN p1.PHONE_TYPE IS NULL OR p1.PHONE_TYPE = '' THEN '' ELSE '"phone_type": "' + COALESCE(p1.PHONE_TYPE,'') + '",' END +
@@ -80,8 +79,9 @@ SELECT n.id, STUFF(
           CASE WHEN p1.NOTES IS NULL OR p1.NOTES = '' THEN '' ELSE '"notes": "' + COALESCE(p1.NOTES,'') + '",' END +
           CASE WHEN p1.PERMISS_TO_TEXT_DATE IS NULL OR p1.PERMISS_TO_TEXT_DATE = '' THEN '' ELSE COALESCE('"permiss_to_text_date": "' +convert(varchar(50), p1.PERMISS_TO_TEXT_DATE, 121) + '",','') END +
           CASE WHEN p1.PERMISS_TO_TEXT_SOURCE IS NULL OR p1.PERMISS_TO_TEXT_SOURCE = '' THEN '' ELSE '"permiss_to_text_source": "' + COALESCE(p1.PERMISS_TO_TEXT_SOURCE,'') + '",' END +
-          CASE WHEN p1.EXTENSION IS NULL OR p1.EXTENSION = '' THEN '' ELSE '"extension": "' + COALESCE(p1.EXTENSION,'') + '"' END +
-          '}'
+          CASE WHEN p1.EXTENSION IS NULL OR p1.EXTENSION = '' THEN '' ELSE '"extension": "' + COALESCE(p1.EXTENSION,'') + '",' END +
+          '"imis_seqn": "' + COALESCE(convert(varchar(50),p1.SEQN),'') + '"' +
+		  '}'
   FROM dbo.UH_PHONE p1
   WHERE p1.id = n.id
   ORDER BY p1.id
@@ -91,7 +91,6 @@ SELECT n.id, STUFF(
   '[' + STUFF(
           (
             SELECT ', {' +
-            '"imis_seqn": "' + COALESCE(convert(varchar(50),q1.SEQN),'') + '",' +
             CASE WHEN q1.EMPLOYER_NAME IS NULL OR q1.EMPLOYER_NAME = '' THEN '' ELSE '"employer_name": "' + STRING_ESCAPE(COALESCE(q1.EMPLOYER_NAME,''), 'json') + '",' END +
             CASE WHEN q1.EMPLOYER_ID IS NULL OR q1.EMPLOYER_ID = '' THEN '' ELSE '"employer_id": "' + COALESCE(q1.EMPLOYER_ID,'') + '",' END +
             CASE WHEN q1.EMPLOYEE_ID IS NULL OR q1.EMPLOYEE_ID = '' THEN '' ELSE '"employee_id": "' + COALESCE(q1.EMPLOYEE_ID,'') + '",' END +
@@ -102,8 +101,9 @@ SELECT n.id, STUFF(
             CASE WHEN q1.[LOCATION] IS NULL OR q1.[LOCATION] = '' THEN '' ELSE '"location": "' + COALESCE(q1.[LOCATION],'') + '",' END +
             CASE WHEN q1.DEPT IS NULL OR q1.DEPT = '' THEN '' ELSE '"dept": "' + COALESCE(q1.DEPT,'') + '",' END +
             CASE WHEN q1.[SHIFT] IS NULL OR q1.[SHIFT] = '' THEN '' ELSE '"shift": "' + COALESCE(q1.[SHIFT],'') + '",' END +
-            CASE WHEN q1.WORK_HOURS IS NULL OR q1.WORK_HOURS = '' THEN '' ELSE '"work_hours": "' + COALESCE(q1.WORK_HOURS,'') + '"' END + 
-            '}'
+            CASE WHEN q1.WORK_HOURS IS NULL OR q1.WORK_HOURS = '' THEN '' ELSE '"work_hours": "' + COALESCE(q1.WORK_HOURS,'') + '",' END + 
+            '"imis_seqn": "' + COALESCE(convert(varchar(50),q1.SEQN),'') + '"' +
+			'}'
   FROM dbo.UH_EMPLOYER q1
   WHERE q1.id = n.id
   ORDER BY q1.id
@@ -127,8 +127,9 @@ SELECT n.id, STUFF(
             CASE WHEN d1.CITY_ORIGIN_SRC IS NULL OR d1.CITY_ORIGIN_SRC = '' THEN '' ELSE '"city_origin_src": "' + COALESCE(d1.CITY_ORIGIN_SRC,'') + '",' END + 
             CASE WHEN d1.GENDER IS NULL OR d1.GENDER = '' THEN '' ELSE '"gender": "' + COALESCE(d1.GENDER,'') + '",' END +
             CASE WHEN d1.GENDER_SRC IS NULL OR d1.GENDER_SRC = '' THEN '' ELSE '"gender_src": "' + COALESCE(d1.GENDER_SRC,'') + '",' END +
-            CASE WHEN d1.OTHER_GENDER IS NULL OR d1.OTHER_GENDER = '' THEN '' ELSE '"other_gender": "' + COALESCE(d1.OTHER_GENDER,'') + '"' END + 
-            '}'
+            CASE WHEN d1.OTHER_GENDER IS NULL OR d1.OTHER_GENDER = '' THEN '' ELSE '"other_gender": "' + COALESCE(d1.OTHER_GENDER,'') + '",' END + 
+            '"imis_id": "' + d1.ID + '"' +
+			'}'
   FROM dbo.UH_DEMO d1
   WHERE d1.id = n.id
   ORDER BY d1.id
