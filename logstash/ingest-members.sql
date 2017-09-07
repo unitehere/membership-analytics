@@ -30,7 +30,7 @@ SELECT n.id, STUFF(
     (
       SELECT ', {' +
       CASE WHEN a1.TEAM IS NULL OR a1.TEAM = '' THEN '' ELSE '"team": "' + COALESCE(a1.TEAM,'') + '",' END +
-      CASE WHEN a1.PREFERRED IS NULL OR a1.PREFERRED = '' THEN '' ELSE '"preferred": ' + COALESCE(convert(varchar(1),a1.PREFERRED),'') + ',' END +
+      CASE WHEN a1.PREFERRED IS NULL OR a1.PREFERRED = '' THEN '' ELSE '"preferred": ' + CASE WHEN COALESCE(a1.PREFERRED,0) = 1 THEN 'true' ELSE 'false' END + ',' END +
       CASE WHEN a1.ADDRESS_TYPE IS NULL OR a1.ADDRESS_TYPE = '' THEN '' ELSE '"address_type": "' + COALESCE(a1.ADDRESS_TYPE,'') + '",' END +
       CASE WHEN a1.ADDRESS_1 IS NULL OR a1.ADDRESS_1 = '' THEN '' ELSE '"address_1": "' + COALESCE(a1.ADDRESS_1,'') + '",' END +
       CASE WHEN a1.ADDRESS_2 IS NULL OR a1.ADDRESS_2 = '' THEN '' ELSE '"address_2": "' + COALESCE(a1.ADDRESS_2,'') + '",' END +
@@ -40,7 +40,7 @@ SELECT n.id, STUFF(
       CASE WHEN a1.ZIP IS NULL OR a1.ZIP = '' THEN '' ELSE '"zip": "' + COALESCE(a1.ZIP,'') + '",' END + 
       CASE WHEN a1.COUNTRY IS NULL OR a1.COUNTRY = '' THEN '' ELSE '"country": "' + COALESCE(a1.COUNTRY,'') + '",' END +
       CASE WHEN a1.NOTE IS NULL OR a1.NOTE = '' THEN '' ELSE '"note": "' + COALESCE(a1.NOTE,'') + '",' END +
-      CASE WHEN a1.VALIDATED IS NULL OR a1.VALIDATED = '' THEN '' ELSE '"validated": ' + COALESCE(convert(varchar(1), a1.VALIDATED),'') + ',' END + 
+      CASE WHEN a1.VALIDATED IS NULL OR a1.VALIDATED = '' THEN '' ELSE '"validated": ' + CASE WHEN COALESCE(a1.VALIDATED,0) = 1 THEN 'true' ELSE 'false' END + ',' END + 
       '"imis_seqn": "' + COALESCE(convert(varchar(50),a1.SEQN),'') + '"' +
 	  '}'
   FROM dbo.UH_ADDRESS a1
@@ -53,7 +53,7 @@ SELECT n.id, STUFF(
       (
         SELECT ',  {' +
         CASE WHEN e1.TEAM IS NULL OR e1.TEAM = '' THEN '' ELSE '"team": "' + COALESCE(e1.TEAM,'') + '",' END +
-        CASE WHEN e1.PREFERRED IS NULL OR e1.PREFERRED = '' THEN '' ELSE '"preferred": ' + COALESCE(convert(varchar(50),e1.PREFERRED),'') + ',' END +
+        CASE WHEN e1.PREFERRED IS NULL OR e1.PREFERRED = '' THEN '' ELSE '"preferred": ' + CASE WHEN COALESCE(e1.PREFERRED,0) = 1 THEN 'true' ELSE 'false' END + ',' END +
         CASE WHEN e1.EMAIL_TYPE IS NULL OR e1.EMAIL_TYPE = '' THEN '' ELSE '"email_type": "' + COALESCE(e1.EMAIL_TYPE,'') + '",' END +
         CASE WHEN e1.EMAIL IS NULL OR e1.EMAIL = '' THEN '' ELSE '"email": "' + COALESCE(e1.EMAIL,'') + '",' END + 
         CASE WHEN e1.NOTE IS NULL OR e1.NOTE = '' THEN '' ELSE '"note": "' + COALESCE(e1.NOTE,'') + '",' END +
@@ -71,7 +71,7 @@ SELECT n.id, STUFF(
         (
           SELECT ', {' +
           CASE WHEN p1.TEAM IS NULL OR p1.TEAM = '' THEN '' ELSE '"team": "' + COALESCE(p1.TEAM,'') + '",' END +
-          CASE WHEN p1.PREFERRED IS NULL OR p1.PREFERRED = '' THEN '' ELSE '"preferred": ' + COALESCE(convert(varchar(50),p1.PREFERRED),'') + ',' END +
+          CASE WHEN p1.PREFERRED IS NULL OR p1.PREFERRED = '' THEN '' ELSE '"preferred": ' + CASE WHEN COALESCE(p1.PREFERRED,0) = 1 THEN 'true' ELSE 'false' END + ',' END +
           CASE WHEN p1.PHONE_TYPE IS NULL OR p1.PHONE_TYPE = '' THEN '' ELSE '"phone_type": "' + COALESCE(p1.PHONE_TYPE,'') + '",' END +
           CASE WHEN p1.PHONE IS NULL OR p1.PHONE = '' THEN '' ELSE '"phone": "' + COALESCE(p1.PHONE,'') + '",' END + 
           CASE WHEN p1.OPTIN_TEXT IS NULL OR p1.OPTIN_TEXT = '' THEN '' ELSE '"optin_text": "' + COALESCE(p1.OPTIN_TEXT,'') + '",' END +
@@ -94,7 +94,7 @@ SELECT n.id, STUFF(
             CASE WHEN q1.EMPLOYER_NAME IS NULL OR q1.EMPLOYER_NAME = '' THEN '' ELSE '"employer_name": "' + STRING_ESCAPE(COALESCE(q1.EMPLOYER_NAME,''), 'json') + '",' END +
             CASE WHEN q1.EMPLOYER_ID IS NULL OR q1.EMPLOYER_ID = '' THEN '' ELSE '"employer_id": "' + COALESCE(q1.EMPLOYER_ID,'') + '",' END +
             CASE WHEN q1.EMPLOYEE_ID IS NULL OR q1.EMPLOYEE_ID = '' THEN '' ELSE '"employee_id": "' + COALESCE(q1.EMPLOYEE_ID,'') + '",' END +
-            CASE WHEN q1.PRIMARY_EMPLOYER IS NULL OR q1.PRIMARY_EMPLOYER = '' THEN '' ELSE '"primary_employer": ' + COALESCE(CONVERT(varchar(1), q1.PRIMARY_EMPLOYER),'') + ',' END + 
+            CASE WHEN q1.PRIMARY_EMPLOYER IS NULL OR q1.PRIMARY_EMPLOYER = '' THEN '' ELSE '"primary_employer": ' + CASE WHEN COALESCE(q1.PRIMARY_EMPLOYER,0) = 1 THEN 'true' ELSE 'false' END + ',' END + 
             CASE WHEN q1.EFFECTIVE_DATE IS NULL OR q1.EFFECTIVE_DATE = '' THEN '' ELSE COALESCE('"effective_date": "' + convert(varchar(50), q1.EFFECTIVE_DATE, 121) + '",','') END +
             CASE WHEN q1.THRU_DATE IS NULL OR q1.THRU_DATE = '' THEN '' ELSE COALESCE('"thru_date": "' + convert(varchar(50), q1.THRU_DATE, 121) + '",','') END +
             CASE WHEN q1.CLASSIFICATION IS NULL OR q1.CLASSIFICATION = '' THEN '' ELSE '"classification": "' + COALESCE(q1.CLASSIFICATION,'') + '",' END +
