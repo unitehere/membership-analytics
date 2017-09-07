@@ -13,6 +13,7 @@ fi
 
 cd $ES_PLUGIN_DIR
 ./elasticsearch-plugin install analysis-phonetic
+./elasticsearch-plugin install x-pack
 
 cd -
 
