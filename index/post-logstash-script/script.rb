@@ -39,6 +39,8 @@ def decrypt_and_replace
     decrypt_ssns(next_batch)
     replace_ssns(next_batch)
   end
+
+  shift_members_alias
 end
 
 ## takes in an array of SSN and decrypt each encrypted ssn
@@ -69,6 +71,13 @@ def replace_ssns(ssns)
     }
   end
   p ES_CLIENT.bulk(body: query)
+end
+
+def shift_members_alias
+  ## add members to today's index
+  ES_CLIENT.indices.put_alias(index: INDEX, name: 'members')
+  ## remove members from yesterday's index
+  ES_CLIENT.indices.delete_alias(index: 'members-' + (Date.today-1).strftime("%Y.%m.%d"), name: 'members')
 end
 
 decrypt_and_replace
