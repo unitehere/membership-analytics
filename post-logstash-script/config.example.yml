@@ -1,0 +1,6 @@
+es_config:
+  :host: 'https://elasticsearch.unitehere.org:9200'
+  :user: 'ELASTIC_SEARCH_USER_NAME'
+  :password: 'THE_PASSWORD'
+
+fpe_key: "Bearer TOKEN"
