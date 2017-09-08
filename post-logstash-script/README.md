@@ -10,14 +10,14 @@
 4. Run ruby script.rb, or jruby script.rb
 
 ## Note
-1. Run a reindex query to generate a `test-member` index to test. Example:
+1. Run a reindex query to generate a `members-test` index to test. Example:
   POST /_reindex
   {
     "source": {
       "index": "members"
     },
     "dest": {
-      "index": "test-members"
+      "index": "members-test"
     }
   }
 2. Some keys in the yaml are symbols (with the :) infront of it. The elastic search gem doesn't take string keys for some reason.

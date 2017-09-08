@@ -14,25 +14,25 @@ INDEX = 'members-' + Date.today.strftime("%Y.%m.%d") # eg "members-2017.09.06"
 
 def decrypt_and_replace
   response = ES_CLIENT.search(index: INDEX, scroll:"3m", size: 10000,
-  body: { 
-    query: { 
+  body: {
+    query: {
       bool: {
         must: {
-         match_all: { } 
+         match_all: { }
         },
         filter: {
           exists: { field: "demographics.ssn" }
-        } 
+        }
       }
     }
   })
   # process the first batch, generate a scroll_id to scroll through everything in that index
-  initial_batch = response['hits']['hits'].map do |doc| 
+  initial_batch = response['hits']['hits'].map do |doc|
     SSN.new(doc['_id'], doc['_source']['demographics']['ssn'])
   end
   decrypt_ssns(initial_batch)
   replace_ssns(initial_batch)
-  
+
   # Call the `scroll` API until empty results are returned
   while response = ES_CLIENT.scroll(scroll_id: response['_scroll_id'], scroll: '5m') and not response['hits']['hits'].empty? do
     next_batch = response['hits']['hits'].map { |doc| SSN.new(doc['_id'], doc['_source']['demographics']['ssn']) }
@@ -53,15 +53,15 @@ def decrypt_ssns(ssns)
 end
 
 def replace_ssns(ssns)
-  query = ssns.map do |ssn| 
-    { update: 
+  query = ssns.map do |ssn|
+    { update:
       { _index: INDEX,
         _type: 'member',
         _id: ssn.id,
-        data: { 
-          doc: { 
-            demographics: { 
-              ssn: ssn.decrypted 
+        data: {
+          doc: {
+            demographics: {
+              ssn: ssn.decrypted
             }
           }
         }
