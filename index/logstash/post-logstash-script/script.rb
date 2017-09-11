@@ -74,10 +74,12 @@ def replace_ssns(ssns)
 end
 
 def shift_members_alias
-  ## add members to today's index
-  ES_CLIENT.indices.put_alias(index: INDEX, name: 'members')
-  ## remove members from yesterday's index
-  ES_CLIENT.indices.delete_alias(index: 'members-' + (Date.today-1).strftime("%Y.%m.%d"), name: 'members')
+  ES_CLIENT.indices.update_aliases body: {
+    actions: [
+      { add: { index: INDEX, alias: 'members' } },
+      { remove: { index: 'members-' + (Date.today-1).strftime("%Y.%m.%d"), alias: 'members' } }
+    ]
+  }
 end
 
 decrypt_and_replace
