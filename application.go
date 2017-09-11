@@ -22,8 +22,6 @@ type ResponseValues struct {
 }
 
 func main() {
-	config.Init()
-
 	secureMiddleware := secure.New(secure.Options{
 		FrameDeny:        true,
 		BrowserXssFilter: true,
