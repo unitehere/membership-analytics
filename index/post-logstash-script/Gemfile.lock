@@ -1,14 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    hashie (3.5.6)
     manticore (0.6.1-java)
 
 PLATFORMS
   java
 
 DEPENDENCIES
-  hashie
   manticore
 
 BUNDLED WITH

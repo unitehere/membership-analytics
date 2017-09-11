@@ -32,9 +32,9 @@ SELECT n.id, STUFF(
       CASE WHEN a1.TEAM IS NULL OR a1.TEAM = '' THEN '' ELSE '"team": "' + COALESCE(a1.TEAM,'') + '",' END +
       CASE WHEN a1.PREFERRED IS NULL OR a1.PREFERRED = '' THEN '' ELSE '"preferred": ' + CASE WHEN COALESCE(a1.PREFERRED,0) = 1 THEN 'true' ELSE 'false' END + ',' END +
       CASE WHEN a1.ADDRESS_TYPE IS NULL OR a1.ADDRESS_TYPE = '' THEN '' ELSE '"address_type": "' + COALESCE(a1.ADDRESS_TYPE,'') + '",' END +
-      CASE WHEN a1.ADDRESS_1 IS NULL OR a1.ADDRESS_1 = '' THEN '' ELSE '"address_1": "' + COALESCE(a1.ADDRESS_1,'') + '",' END +
-      CASE WHEN a1.ADDRESS_2 IS NULL OR a1.ADDRESS_2 = '' THEN '' ELSE '"address_2": "' + COALESCE(a1.ADDRESS_2,'') + '",' END +
-      CASE WHEN a1.ADDRESS_3 IS NULL OR a1.ADDRESS_3 = '' THEN '' ELSE '"address_3": "' + COALESCE(a1.ADDRESS_3,'') + '",' END +
+      CASE WHEN a1.ADDRESS_1 IS NULL OR a1.ADDRESS_1 = '' THEN '' ELSE '"address_1": "' + STRING_ESCAPE(COALESCE(a1.ADDRESS_1,''), 'json') + '",' END +
+      CASE WHEN a1.ADDRESS_2 IS NULL OR a1.ADDRESS_2 = '' THEN '' ELSE '"address_2": "' + STRING_ESCAPE(COALESCE(a1.ADDRESS_2,''), 'json') + '",' END +
+      CASE WHEN a1.ADDRESS_3 IS NULL OR a1.ADDRESS_3 = '' THEN '' ELSE '"address_3": "' + STRING_ESCAPE(COALESCE(a1.ADDRESS_3,''), 'json') + '",' END +
       CASE WHEN a1.CITY IS NULL OR a1.CITY = '' THEN '' ELSE '"city": "' + COALESCE(a1.CITY,'') + '",' END +
       CASE WHEN a1.STATE_PROVINCE IS NULL OR a1.STATE_PROVINCE = '' THEN '' ELSE '"state_province": "' + COALESCE(a1.STATE_PROVINCE,'') + '",' END +
       CASE WHEN a1.ZIP IS NULL OR a1.ZIP = '' THEN '' ELSE '"zip": "' + COALESCE(a1.ZIP,'') + '",' END + 
