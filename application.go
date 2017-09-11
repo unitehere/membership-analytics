@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"membership-analytics/pkg"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/goware/cors"
@@ -20,6 +22,8 @@ type ResponseValues struct {
 }
 
 func main() {
+	config.Init()
+
 	secureMiddleware := secure.New(secure.Options{
 		FrameDeny:        true,
 		BrowserXssFilter: true,
@@ -62,10 +66,9 @@ func main() {
 // GetSearchSSN ...[comment here]
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-	client, err := elastic.NewClient(
+	client, err := elastic.NewSimpleClient(
 		elastic.SetURL("https://elasticsearch.unitehere.org:9200"),
-		elastic.SetSniff(false),
-	)
+		elastic.SetBasicAuth(config.Values.ElasticUsername, config.Values.ElasticPassword))
 	if err != nil {
 		// Handle error
 		panic(err)
