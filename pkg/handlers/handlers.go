@@ -6,20 +6,16 @@ import (
 	"gopkg.in/olivere/elastic.v5"
 	"net/http"
 
-	"membership-analytics/pkg/configuration"
+	"membership-analytics/config"
 )
-
-// The ResponseValues type describes the structure of the all responses.
-// type ResponseValues struct {
-// 	Values map[string]interface{}
-// }
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
 	Values []map[string]interface{}
 }
 
-// GetSearchSSN ...[comment here]
+// GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
+// r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	client, err := elastic.NewSimpleClient(
