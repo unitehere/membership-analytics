@@ -1,4 +1,4 @@
-package HttpHandlers
+package handlers
 
 import (
 	"context"
@@ -10,8 +10,13 @@ import (
 )
 
 // The ResponseValues type describes the structure of the all responses.
+// type ResponseValues struct {
+// 	Values map[string]interface{}
+// }
+
+// The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values map[string]interface{}
+	Values []map[string]interface{}
 }
 
 // GetSearchSSN ...[comment here]
@@ -24,12 +29,12 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 		// Handle error
 		panic(err)
 	}
-	query := elastic.NewMatchQuery("demographics.ssn", r.URL.Query()["q"][0])
+	query := elastic.NewMatchQuery("demographics.ssn", r.URL.Query()["q"][0]).Fuzziness("Auto")
 
 	searchResult, err := client.Search().
 		Query(query).
 		Pretty(true).
-		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("imis_id")).
+		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("imis_id", "demographics.ssn")).
 		Do(ctx)
 
 	if err != nil {
@@ -45,7 +50,7 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				// Deserialization failed
 			}
-			payload.Values = data
+			payload.Values = append(payload.Values, data)
 		}
 	} else {
 		w.WriteHeader(http.StatusNotFound)

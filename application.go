@@ -40,7 +40,7 @@ func main() {
 	r.Use(secureMiddleware.Handler)
 
 	r.Route("/search", func(r chi.Router) {
-		r.Get("/ssn", HttpHandlers.GetSearchSSN)
+		r.Get("/ssn", handlers.GetSearchSSN)
 		// r.Post("/ssn", PostSearchSSN)
 	})
 
