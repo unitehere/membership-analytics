@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -19,7 +18,6 @@ type Configuration struct {
 var Values = Configuration{}
 
 func init() {
-	fmt.Println(getFileName())
 	err := gonfig.GetConf(getFileName(), &Values)
 	if err != nil {
 		panic(err)

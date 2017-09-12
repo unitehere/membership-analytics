@@ -17,12 +17,17 @@ type ResponseValues struct {
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
+	// TODO refactor this into a method named getValuesFromURLParam
+	if len(r.URL.Query()["q"]) < 1 { // if no query was passed
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("You need to pass in a partial ssn as a q param."))
+		return
+	}
 	ctx := context.Background()
 	client, err := elastic.NewSimpleClient(
 		elastic.SetURL("https://elasticsearch.unitehere.org:9200"),
 		elastic.SetBasicAuth(config.Values.ElasticUsername, config.Values.ElasticPassword))
 	if err != nil {
-		// Handle error
 		panic(err)
 	}
 	query := elastic.NewMatchQuery("demographics.ssn", r.URL.Query()["q"][0]).Fuzziness("Auto")

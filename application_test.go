@@ -5,6 +5,5 @@ import (
 )
 
 func Test(t *testing.T) {
-	// t.Log("Hello")
-	// t.Fail()
+	// TODO - test something meaningful
 }
