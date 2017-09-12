@@ -17,10 +17,10 @@ type ResponseValues struct {
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
-	// TODO refactor this into a method named getValuesFromURLParam
-	if len(r.URL.Query()["q"]) < 1 { // if no query was passed
+	ssnQuery := r.URL.Query()["q"][0]
+	if len(ssnQuery) < 7 { // if no query was passed or it's less than 7 characters
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("You need to pass in a partial ssn as a q param."))
+		w.Write([]byte("You need to pass in a ssn string of at least 7 digits as a q param."))
 		return
 	}
 	ctx := context.Background()
@@ -30,9 +30,10 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	query := elastic.NewMatchQuery("demographics.ssn", r.URL.Query()["q"][0]).Fuzziness("Auto")
+	query := elastic.NewMatchQuery("demographics.ssn", ssnQuery).Fuzziness("Auto")
 
 	searchResult, err := client.Search().
+		Index(config.Values.Index).
 		Query(query).
 		Pretty(true).
 		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("imis_id", "demographics.ssn")).

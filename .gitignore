@@ -28,5 +28,6 @@ dbconf.yml
 !.elasticbeanstalk/*.global.yml
 
 config.yml
-config.json
+config.dev.json
+config.prod.json
 .ruby-version
