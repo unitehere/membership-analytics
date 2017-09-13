@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	"membership-analytics/config"
+	"github.com/unitehere/membership-analytics/config"
 )
 
 var (
