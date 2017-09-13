@@ -3,15 +3,38 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"gopkg.in/olivere/elastic.v5"
 	"net/http"
+	"sync"
 
 	"membership-analytics/config"
+)
+
+var (
+	clientInit sync.Once
+	client     *elastic.Client
 )
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
 	Values []map[string]interface{}
+}
+
+// Client inits a new client on initial call, and returns the initialized client subsequently
+func Client() *elastic.Client {
+	clientInit.Do(func() {
+		c, err := elastic.NewClient(
+			elastic.SetURL("https://elasticsearch.unitehere.org:9200"),
+			elastic.SetBasicAuth(config.Values.ElasticUsername, config.Values.ElasticPassword),
+			elastic.SetSniff(false),
+			elastic.SetHealthcheck(false))
+		if err != nil {
+			panic(err)
+		}
+		client = c
+	})
+	return client
 }
 
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
@@ -24,15 +47,10 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := context.Background()
-	client, err := elastic.NewSimpleClient(
-		elastic.SetURL("https://elasticsearch.unitehere.org:9200"),
-		elastic.SetBasicAuth(config.Values.ElasticUsername, config.Values.ElasticPassword))
-	if err != nil {
-		panic(err)
-	}
+
 	query := elastic.NewMatchQuery("demographics.ssn", ssnQuery).Fuzziness("Auto")
 
-	searchResult, err := client.Search().
+	searchResult, err := Client().Search().
 		Index(config.Values.Index).
 		Query(query).
 		Pretty(true).

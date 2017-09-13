@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	// "github.com/stretchr/testify/assert"
+	// "gopkg.in/olivere/elastic.v5"
 )
 
 // r.Get("/ssn", handlers.GetSearchSSN)
