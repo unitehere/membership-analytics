@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"gopkg.in/olivere/elastic.v5"
 	"net/http"
 	"sync"
@@ -40,15 +40,15 @@ func Client() *elastic.Client {
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
-	ssnQuery := r.URL.Query()["q"][0]
-	if len(ssnQuery) < 7 { // if no query was passed or it's less than 7 characters
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("You need to pass in a ssn string of at least 7 digits as a q param."))
+	ssnQuery := r.URL.Query()["q"]
+
+	if len(ssnQuery) == 0 || len(ssnQuery[0]) < 7 {
+		writeError(w, http.StatusBadRequest, errors.New("You need to pass in a ssn string of at least 7 digits as a q param"))
 		return
 	}
 	ctx := context.Background()
 
-	query := elastic.NewMatchQuery("demographics.ssn", ssnQuery).Fuzziness("Auto")
+	query := elastic.NewMatchQuery("demographics.ssn", ssnQuery[0]).Fuzziness("Auto")
 
 	searchResult, err := Client().Search().
 		Index(config.Values.Index).
@@ -68,12 +68,12 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 			var data map[string]interface{}
 			err := json.Unmarshal(*hit.Source, &data)
 			if err != nil {
-				// Deserialization failed
+				panic("Could not read data from api response")
 			}
 			payload.Values = append(payload.Values, data)
 		}
 	} else {
-		w.WriteHeader(http.StatusNotFound)
+		writeError(w, http.StatusNotFound, errors.New("Did not match any ssns"))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

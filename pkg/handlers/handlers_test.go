@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	// "github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/assert"
 	// "gopkg.in/olivere/elastic.v5"
 )
 
 // r.Get("/ssn", handlers.GetSearchSSN)
 func TestGetSearchSSN(t *testing.T) {
-	req, err := http.NewRequest("GET", "/search/ssn?q=somefakessntomocklater", nil)
+	req, err := http.NewRequest("GET", "/search/ssn?q=killme", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,10 +21,8 @@ func TestGetSearchSSN(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
+	status := rr.Code
+	assert.Equal(t, status, 200, "they should be equal")
 
 	// Check the response body is what we expect.
 	// expected := `{"some": thing}`
