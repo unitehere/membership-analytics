@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"sync"
 
 	"github.com/unitehere/membership-analytics/pkg/services/members"
 )
 
 var (
-	serviceInit    sync.Once
 	membersService members.Service
 )
 
@@ -19,17 +17,17 @@ type ResponseValues struct {
 	Values []map[string]interface{} `json:"values"`
 }
 
+func init() {
+	var err error
+	membersService, err = members.Client()
+	if err != nil {
+		panic(err)
+	}
+}
+
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
-	var err error
-	serviceInit.Do(func() {
-		membersService, err = members.Client()
-		if err != nil {
-			panic(err)
-		}
-	})
-
 	ssnQuery := r.URL.Query()["q"]
 
 	if len(ssnQuery) == 0 || len(ssnQuery[0]) < 7 {
