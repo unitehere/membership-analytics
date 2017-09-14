@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"membership-analytics/pkg/handlers"
+	"github.com/unitehere/membership-analytics/pkg/handlers"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"

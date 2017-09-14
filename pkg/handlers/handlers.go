@@ -4,18 +4,32 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sync"
 
-	"membership-analytics/pkg/services/elastic"
+	"github.com/unitehere/membership-analytics/pkg/services/members"
+)
+
+var (
+	serviceInit    sync.Once
+	membersService members.Service
 )
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values []map[string]interface{}
+	Values []map[string]interface{} `json:"values"`
 }
 
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
+	var err error
+	serviceInit.Do(func() {
+		membersService, err = members.Client()
+		if err != nil {
+			panic(err)
+		}
+	})
+
 	ssnQuery := r.URL.Query()["q"]
 
 	if len(ssnQuery) == 0 || len(ssnQuery[0]) < 7 {
@@ -23,26 +37,14 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	searchResult, err := elastic.SearchSSN(ssnQuery[0])
+	searchResult, err := membersService.SearchSSN(ssnQuery[0])
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
 
 	payload := ResponseValues{}
-	if searchResult.Hits.TotalHits > 0 {
-		for _, hit := range searchResult.Hits.Hits {
-			var data map[string]interface{}
-			err := json.Unmarshal(*hit.Source, &data)
-			if err != nil {
-				panic("Could not read data from api response")
-			}
-			payload.Values = append(payload.Values, data)
-		}
-	} else {
-		writeError(w, http.StatusNotFound, errors.New("Did not match any ssns"))
-		return
-	}
+	payload.Values = searchResult
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payload)
