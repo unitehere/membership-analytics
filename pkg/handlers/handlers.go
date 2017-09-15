@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/unitehere/membership-analytics/pkg/services/members"
@@ -14,7 +13,8 @@ var (
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values []map[string]interface{} `json:"values"`
+	Values []map[string]interface{} `json:"values,omitempty"`
+	Error  string                   `json:"error,omitempty"`
 }
 
 func init() {
@@ -31,7 +31,9 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 	ssnQuery := r.URL.Query()["q"]
 
 	if len(ssnQuery) == 0 || len(ssnQuery[0]) < 7 {
-		writeError(w, http.StatusBadRequest, errors.New("You need to pass in a ssn string of at least 7 digits as a q param"))
+		payload := ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(payload)
 		return
 	}
 

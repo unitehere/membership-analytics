@@ -1,25 +1,25 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	// "gopkg.in/olivere/elastic.v5"
 )
 
 // r.Get("/ssn", handlers.GetSearchSSN)
-
 func TestGetSearchSSN(t *testing.T) {
 	cases := []struct {
-		query, want string
-		status      int
+		query    string
+		expected ResponseValues
+		status   int
 	}{
-		{"", "You need to pass in a ssn string of at least 7 digits as a q param", 400},
-		{"123456", "You need to pass in a ssn string of at least 7 digits as a q param", 400},
-		{"123456789", "{\"values\":[{\"imis_id\":\"5962\"}]}\n", 200},
-		{"555555555", "{\"values\":[]}\n", 200},
+		{"", ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}, 400},
+		{"123456", ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}, 400},
+		{"123456789", ResponseValues{[]map[string]interface{}{map[string]interface{}{"imis_id": "5962"}}, ""}, 200},
+		{"555555555", ResponseValues{nil, ""}, 200},
 	}
 	membersService = mockService{}
 
@@ -37,9 +37,10 @@ func TestGetSearchSSN(t *testing.T) {
 		assert.Equal(t, testCase.status, actualStatus, "they should be equal")
 
 		// Check the response body is what we expect.
-		response := rr.Body.String()
-		expected := testCase.want
-		assert.Equal(t, expected, response)
+		// response := rr.Body.String()
+		response := ResponseValues{}
+		json.Unmarshal(rr.Body.Bytes(), &response)
+		assert.Equal(t, testCase.expected, response)
 	}
 }
 
