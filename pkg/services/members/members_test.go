@@ -1,6 +1,7 @@
 package members
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,12 +13,12 @@ import (
 
 func TestSearchSSN(t *testing.T) {
 	cases := []struct {
-		testDataPath string
-		want         []map[string]interface{}
+		testResponsePath   string
+		expectedResultPath string
 	}{
-		{"testdata/notfound.json", []map[string]interface{}{}},
-		{"testdata/onefound.json", []map[string]interface{}{map[string]interface{}{"imis_id": "5962"}}},
-		{"testdata/multiplefound.json", []map[string]interface{}{map[string]interface{}{"demographics": map[string]interface{}{"ssn": "123456789"}, "imis_id": "5962"}, map[string]interface{}{"imis_id": "5965", "demographics": map[string]interface{}{"ssn": "123456788"}}}},
+		{"TestSearchSSN/notfound_response.json", "TestSearchSSN/notfound_expected.json"},
+		{"TestSearchSSN/onefound_response.json", "TestSearchSSN/onefound_expected.json"},
+		{"TestSearchSSN/multiplefound_response.json", "TestSearchSSN/multiplefound_expected.json"},
 	}
 
 	for _, testCase := range cases {
@@ -27,7 +28,7 @@ func TestSearchSSN(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		resp, err := ioutil.ReadFile(testCase.testDataPath)
+		resp, err := ioutil.ReadFile(testCase.testResponsePath)
 		assert.NoError(t, err)
 
 		handler = func(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +41,13 @@ func TestSearchSSN(t *testing.T) {
 		actualResult, err := s.SearchSSN("123456789")
 		assert.NoError(t, err)
 
-		assert.Equal(t, testCase.want, actualResult)
+		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
+		var expectedResult []map[string]interface{}
+		assert.NoError(t, err)
+		err = json.Unmarshal(expectedResultBytes, &expectedResult)
+		assert.NoError(t, err)
+
+		assert.Equal(t, expectedResult, actualResult)
 	}
 }
 
