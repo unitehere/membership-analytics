@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"github.com/dynamic-querying"
 
 	"github.com/unitehere/membership-analytics/pkg/handlers"
 

@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "min_score": 4,
+    "size": 200,
+    "fields": [
+      { "field_name": "last_name",
+        "apply": true,
+        "field_type": "string",
+        "boost": 10,
+        "fuzziness": 2 },
+      { "field_name": "first_name",
+        "apply": true,
+        "field_type": "string",
+        "boost": 10,
+        "fuzziness": 2 },
+      { "field_name": "employers.employee_id",
+        "apply": true,
+        "field_type": "string",
+        "boost": 4,
+        "fuzziness": 0.5 },
+      { "field_name": "employers.employer_name", "apply": false, "field_type": "string",
+        "boost": 0, "fuzziness": 0 },
+      { "field_name": "employers.classification", "apply": false, "field_type": "string",
+        "boost": 0, "fuzziness": 0 },
+      { "field_name": "addresses.state_province", "apply": false, "field_type": "string",
+        "boost": 7, "fuzziness": 1 }
+    ]
+  },
+  {
+    "id": 2,
+    "min_score": 4,
+    "size": 100,
+    "fields": [
+      { "field_name": "last_name",
+        "apply": true,
+        "field_type": "string",
+        "boost": 10,
+        "fuzziness": 1.5 },
+      { "field_name": "first_name", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 },
+      { "field_name": "employers.employee_id", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 },
+      { "field_name": "employers.employer_name", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 },
+      { "field_name": "employers.classification", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 },
+      { "field_name": "addresses.state_province",
+        "apply": true,
+        "field_type": "string",
+        "boost": 9,
+        "fuzziness": 1.5 }
+    ]
+  },
+  {
+    "id": 3,
+    "min_score": 4,
+    "size": 200,
+    "fields": [
+      { "field_name": "last_name",
+        "apply": true,
+        "field_type": "string",
+        "boost": 10,
+        "fuzziness": 1.5 },
+      { "field_name": "first_name", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 },
+      { "field_name": "employers.employee_id", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 },
+      { "field_name": "employers.employer_name", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 },
+      { "field_name": "employers.classification", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 },
+      { "field_name": "addresses.state_province", "apply": false, "field_type": "string", "boost": 0, "fuzziness": 0 }
+    ]
+  }
+]

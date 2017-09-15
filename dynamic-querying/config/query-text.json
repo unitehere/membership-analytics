@@ -1,0 +1,10 @@
+[
+  {
+    "field_name": "last_name",
+    "query_text": "{ \"term\": { \"lastname\": { \"term\": \"${VALUE}\", \"boost\": ${BOOST} } } }"
+  },
+  {
+    "field_name": "first_name",
+    "query_text": "{ \"term\": { \"firstname\": { \"term\": \"${VALUE}\", \"boost\": ${BOOST} } } }"
+  }
+]
