@@ -1,0 +1,39 @@
+{
+  "took": 1,
+  "timed_out": false,
+  "_shards": {
+    "total": 5,
+    "successful": 5,
+    "failed": 0
+  },
+  "hits": {
+    "total": 1,
+    "max_score": 7.411551,
+    "hits": [
+      {
+        "_index": "members-2017.09.14",
+        "_type": "member",
+        "_id": "AV5_Z3USj5SI64ssYb5t",
+        "_score": 7.411551,
+        "_source": {
+          "imis_id": "5962",
+          "demographics": {
+            "ssn": "123456789"
+          }
+        }
+      },
+      {
+        "_index": "members-2017.09.14",
+        "_type": "member",
+        "_id": "AV5_Z3USj5SI64ssYb6t",
+        "_score": 7.411551,
+        "_source": {
+          "imis_id": "5965",
+          "demographics": {
+            "ssn": "123456788"
+          }
+        }
+      }
+    ]
+  }
+}
