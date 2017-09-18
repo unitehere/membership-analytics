@@ -1,40 +1,28 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
-	"gopkg.in/olivere/elastic.v5"
 	"net/http"
-	"sync"
 
-	"github.com/unitehere/membership-analytics/config"
+	"github.com/unitehere/membership-analytics/pkg/services/members"
 )
 
 var (
-	clientInit sync.Once
-	client     *elastic.Client
+	membersService members.Service
 )
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values []map[string]interface{}
+	Values []map[string]interface{} `json:"values,omitempty"`
+	Error  string                   `json:"error,omitempty"`
 }
 
-// Client inits a new client on initial call, and returns the initialized client subsequently
-func Client() *elastic.Client {
-	clientInit.Do(func() {
-		c, err := elastic.NewClient(
-			elastic.SetURL("https://elasticsearch.unitehere.org:9200"),
-			elastic.SetBasicAuth(config.Values.ElasticUsername, config.Values.ElasticPassword),
-			elastic.SetSniff(false),
-			elastic.SetHealthcheck(false))
-		if err != nil {
-			panic(err)
-		}
-		client = c
-	})
-	return client
+func init() {
+	var err error
+	membersService, err = members.Client()
+	if err != nil {
+		panic(err)
+	}
 }
 
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
@@ -43,46 +31,62 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 	ssnQuery := r.URL.Query()["q"]
 
 	if len(ssnQuery) == 0 || len(ssnQuery[0]) < 7 {
-		writeError(w, http.StatusBadRequest, errors.New("You need to pass in a ssn string of at least 7 digits as a q param"))
+		payload := ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(payload)
 		return
 	}
-	ctx := context.Background()
 
-	query := elastic.NewMatchQuery("demographics.ssn", ssnQuery[0]).Fuzziness("Auto")
-
-	searchResult, err := Client().Search().
-		Index(config.Values.Index).
-		Query(query).
-		Pretty(true).
-		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("imis_id", "demographics.ssn")).
-		Do(ctx)
-
+	searchResult, err := membersService.SearchSSN(ssnQuery[0])
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
 
 	payload := ResponseValues{}
-	if searchResult.Hits.TotalHits > 0 {
-		for _, hit := range searchResult.Hits.Hits {
-			var data map[string]interface{}
-			err := json.Unmarshal(*hit.Source, &data)
-			if err != nil {
-				panic("Could not read data from api response")
-			}
-			payload.Values = append(payload.Values, data)
-		}
-	} else {
-		writeError(w, http.StatusNotFound, errors.New("Did not match any ssns"))
-		return
-	}
+	payload.Values = searchResult
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payload)
 	return
 }
 
+// PostSearchSSN returns a fuzzy matched array of imis_id given a ssn
+// r.Post("/ssn", handlers.PostSearchSSN)
+func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
+	query, err := getValuesFromBody(r)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	if ssn, ok := query["ssn"]; ok && len(ssn.(string)) >= 7 {
+		searchResult, err := membersService.SearchSSN(ssn.(string))
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		payload := ResponseValues{}
+		payload.Values = searchResult
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(payload)
+	} else {
+		payload := ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(payload)
+	}
+}
+
 func writeError(w http.ResponseWriter, status int, err error) {
 	w.WriteHeader(status)
 	w.Write([]byte(err.Error()))
+}
+
+func getValuesFromBody(r *http.Request) (map[string]interface{}, error) {
+	decoder := json.NewDecoder(r.Body)
+	var requestValues map[string]interface{}
+	err := decoder.Decode(&requestValues)
+	defer r.Body.Close()
+	return requestValues, err
 }
