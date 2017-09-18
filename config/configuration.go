@@ -35,6 +35,6 @@ func getFilePath() string {
 	fileName := "config." + envName + ".json"
 
 	_, dirname, _, _ := runtime.Caller(1)
-	filePath := path.Join(path.Dir(dirname), "..", fileName)
+	filePath := path.Join(path.Dir(dirname), fileName)
 	return filePath
 }
