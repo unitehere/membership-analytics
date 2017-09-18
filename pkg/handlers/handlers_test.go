@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,14 +13,14 @@ import (
 // r.Get("/ssn", handlers.GetSearchSSN)
 func TestGetSearchSSN(t *testing.T) {
 	cases := []struct {
-		query    string
-		expected ResponseValues
-		status   int
+		query              string
+		expectedResultPath string
+		status             int
 	}{
-		{"", ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}, 400},
-		{"123456", ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}, 400},
-		{"123456789", ResponseValues{[]map[string]interface{}{map[string]interface{}{"imis_id": "5962"}}, ""}, 200},
-		{"555555555", ResponseValues{nil, ""}, 200},
+		{"", "TestSearchSSN/invalidinput_response.json", 400},
+		{"123456", "TestSearchSSN/invalidinput_response.json", 400},
+		{"123456789", "TestSearchSSN/onefound_response.json", 200},
+		{"555555555", "TestSearchSSN/notfound_response.json", 200},
 	}
 	membersService = mockService{}
 
@@ -37,10 +38,17 @@ func TestGetSearchSSN(t *testing.T) {
 		assert.Equal(t, testCase.status, actualStatus, "they should be equal")
 
 		// Check the response body is what we expect.
-		// response := rr.Body.String()
-		response := ResponseValues{}
-		json.Unmarshal(rr.Body.Bytes(), &response)
-		assert.Equal(t, testCase.expected, response)
+		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
+		assert.NoError(t, err)
+		var expectedResult map[string]interface{}
+		err = json.Unmarshal(expectedResultBytes, &expectedResult)
+		assert.NoError(t, err)
+
+		var response map[string]interface{}
+		err = json.Unmarshal(rr.Body.Bytes(), &response)
+		assert.NoError(t, err)
+
+		assert.Equal(t, expectedResult, response)
 	}
 }
 

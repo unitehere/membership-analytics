@@ -42,8 +42,9 @@ func TestSearchSSN(t *testing.T) {
 		assert.NoError(t, err)
 
 		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
-		var expectedResult []map[string]interface{}
 		assert.NoError(t, err)
+
+		var expectedResult []map[string]interface{}
 		err = json.Unmarshal(expectedResultBytes, &expectedResult)
 		assert.NoError(t, err)
 

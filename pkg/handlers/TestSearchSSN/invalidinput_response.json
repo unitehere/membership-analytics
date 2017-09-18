@@ -1,0 +1,3 @@
+{
+  "error": "You need to pass in a ssn string of at least 7 digits as a q param"
+}
