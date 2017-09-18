@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"path"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -35,7 +34,7 @@ func getFilePath() string {
 	}
 	fileName := "config." + envName + ".json"
 
-	_, dirname, _, _ := runtime.Caller(0)
-	filePath := path.Join(filepath.Dir(dirname), fileName)
+	_, dirname, _, _ := runtime.Caller(1)
+	filePath := path.Join(path.Dir(dirname), "..", fileName)
 	return filePath
 }
