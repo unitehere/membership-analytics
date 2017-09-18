@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -12,6 +13,13 @@ import (
 	"github.com/goware/cors"
 	"github.com/unrolled/secure"
 )
+
+// GetHealth is an endpoint that returns an empty OK response
+func GetHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	return
+}
 
 func main() {
 	secureMiddleware := secure.New(secure.Options{
@@ -43,6 +51,12 @@ func main() {
 		r.Get("/ssn", handlers.GetSearchSSN)
 		r.Post("/ssn", handlers.PostSearchSSN)
 	})
+
+	r.Get("/health", GetHealth)
+
+	f, _ := os.Create("/var/log/golang/membership-analytics.log")
+	defer f.Close()
+	log.SetOutput(f)
 
 	port := os.Getenv("PORT")
 	if port == "" {
