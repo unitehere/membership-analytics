@@ -53,13 +53,17 @@ func (s *service) SearchSSN(ssn string) ([]map[string]interface{}, error) {
 		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("imis_id")).
 		Do(ctx)
 
+	if err != nil {
+		return nil, err
+	}
+
 	resultLength := len(searchResult.Hits.Hits)
 	result := make([]map[string]interface{}, resultLength, resultLength)
 	for i, hit := range searchResult.Hits.Hits {
 		var data map[string]interface{}
 		err := json.Unmarshal(*hit.Source, &data)
 		if err != nil {
-			panic("Could not read data from api response")
+			return nil, err
 		}
 		result[i] = data
 	}

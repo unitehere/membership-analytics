@@ -41,7 +41,7 @@ func main() {
 
 	r.Route("/search", func(r chi.Router) {
 		r.Get("/ssn", handlers.GetSearchSSN)
-		// r.Post("/ssn", PostSearchSSN)
+		r.Post("/ssn", handlers.PostSearchSSN)
 	})
 
 	port := os.Getenv("PORT")
