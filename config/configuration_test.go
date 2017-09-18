@@ -15,8 +15,8 @@ func TestInit(t *testing.T) {
 
 func TestGetFilePath(t *testing.T) {
 	defer os.Unsetenv("ENV")
-	assert.Contains(t, getFilePath(), "github.com/unitehere/membership-analytics/config.dev.json")
+	assert.Contains(t, getFilePath(), "github.com/unitehere/membership-analytics/config/config.dev.json")
 
 	os.Setenv("ENV", "prod")
-	assert.Contains(t, getFilePath(), "github.com/unitehere/membership-analytics/config.prod.json")
+	assert.Contains(t, getFilePath(), "github.com/unitehere/membership-analytics/config/config.prod.json")
 }

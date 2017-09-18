@@ -46,7 +46,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "4444"
+		port = "80"
 	}
 
 	fmt.Println("Application initializing on port " + port)
