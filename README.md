@@ -10,3 +10,12 @@ This is the search and analytics repository for the membership system.
 
 # Test
 Run `go test $(go list ./... | grep -v /vendor/)` on the root of your directory to run app `_test.go` files excluding the `/vendor`
+
+# Deploying to AWS
+
+1. The first time you deploy you will need to run `eb init` and make sure you deploy to the 
+`membership-analytics` environment. You will also need to add dependencies to the `/vendor` 
+directory using [Govendor](https://github.com/kardianos/govendor). You should be running 
+`govendor add +local` and `govendor add +external`.
+2. To deploy after adding all dependencies to the `/vendor` directory, run `eb deploy`.
+3. Make sure that each time you deploy you update the vendor dependencies if necessary.
