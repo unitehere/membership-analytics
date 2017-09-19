@@ -18,10 +18,10 @@ func TestGetSearchSSN(t *testing.T) {
 		expectedResultPath string
 		status             int
 	}{
-	// {"", "TestSearchSSN/invalidinput_response.json", 400},
-	// {"123456", "TestSearchSSN/invalidinput_response.json", 400},
-	// {"123456789", "TestSearchSSN/onefound_response.json", 200},
-	// {"555555555", "TestSearchSSN/notfound_response.json", 200},
+		{"", "TestGetSearchSSN/invalidinput_response.json", 400},
+		{"123456", "TestGetSearchSSN/invalidinput_response.json", 400},
+		{"123456789", "TestGetSearchSSN/onefound_response.json", 200},
+		{"555555555", "TestGetSearchSSN/notfound_response.json", 200},
 	}
 	membersService = mockService{}
 
