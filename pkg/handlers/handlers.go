@@ -11,6 +11,12 @@ var (
 	membersService members.Service
 )
 
+// Query implements a Validate method used to
+// interact with all other query structs with Validate
+type Query interface {
+	Validate(r *http.Request) error
+}
+
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
 	Values []map[string]interface{} `json:"values,omitempty"`
@@ -76,6 +82,38 @@ func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(payload)
 	}
+}
+
+// PostSearchName returns a fuzzy matched array of imis_id given a first name and or last name
+// r.Post("/name", handlers.PostSearchName)
+func PostSearchName(w http.ResponseWriter, r *http.Request) {
+	var (
+		nameQuery    members.NameQuery
+		searchResult []map[string]interface{}
+	)
+	err := decodeAndValidate(r, &nameQuery)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	searchResult, err = membersService.SearchName(nameQuery)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	payload := ResponseValues{searchResult, ""}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(payload)
+}
+
+func decodeAndValidate(r *http.Request, q Query) error {
+	if err := json.NewDecoder(r.Body).Decode(q); err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	return q.Validate(r)
 }
 
 func writeError(w http.ResponseWriter, status int, err error) {
