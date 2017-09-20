@@ -23,6 +23,17 @@ type ResponseValues struct {
 	Error  string                   `json:"error,omitempty"`
 }
 
+//  TODO refactor so output is this
+// {
+//   "values" : {
+//     "members": {
+//       "count": 1,
+//       "data": [
+//         {"imis_id": "5962"}
+//       ]
+//     }
+// }
+
 func init() {
 	var err error
 	membersService, err = members.Client()
@@ -152,7 +163,7 @@ func decodeAndValidate(r *http.Request, q Query) error {
 		return err
 	}
 	defer r.Body.Close()
-	return q.Validate(r)
+	return q.Validate()
 }
 
 func writeError(w http.ResponseWriter, status int, err error) {
