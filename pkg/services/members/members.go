@@ -9,7 +9,6 @@ import (
 
 	"gopkg.in/olivere/elastic.v5"
 
-	// "github.com/mitchellh/mapstructure"
 	"github.com/asaskevich/govalidator"
 	"github.com/unitehere/membership-analytics/config"
 )
@@ -17,6 +16,7 @@ import (
 var (
 	clientInit     sync.Once
 	errInvalidName = errors.New("You need at least a first or last name")
+	errInvalidSSN  = errors.New("You need to pass in a ssn string of at least 7 digits")
 )
 
 // Service interface for all simple member searches
@@ -35,10 +35,23 @@ type NameQuery struct {
 	LastName  string `json:"last_name"`
 }
 
-// Validate validates
+// SSNQuery is used in SearchSSN
+type SSNQuery struct {
+	SSN string `json:"ssn"`
+}
+
+// Validate validates that either firstName or lastName exists
 func (t NameQuery) Validate(r *http.Request) error {
 	if govalidator.IsNull(t.FirstName) && govalidator.IsNull(t.LastName) {
 		return errInvalidName
+	}
+	return nil
+}
+
+// Validate validates that an ssn of atleast length of 7 exists
+func (t SSNQuery) Validate(r *http.Request) error {
+	if govalidator.IsNull(t.SSN) || govalidator.StringLength(t.SSN, "0", "7") {
+		return errInvalidSSN
 	}
 	return nil
 }

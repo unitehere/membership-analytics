@@ -60,28 +60,28 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 // PostSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Post("/ssn", handlers.PostSearchSSN)
 func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
-	query, err := getValuesFromBody(r)
+	var (
+		ssnQuery     members.SSNQuery
+		searchResult []map[string]interface{}
+		payload      ResponseValues
+	)
+	err := decodeAndValidate(r, &ssnQuery)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err)
+		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
+		json.NewEncoder(w).Encode(payload)
 		return
 	}
-	if ssn, ok := query["ssn"]; ok && len(ssn.(string)) >= 7 {
-		searchResult, err := membersService.SearchSSN(ssn.(string))
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		payload := ResponseValues{}
-		payload.Values = searchResult
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(payload)
-	} else {
-		payload := ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(payload)
+	searchResult, err = membersService.SearchSSN(ssnQuery.SSN)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
 	}
+
+	payload.Values = searchResult
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(payload)
 }
 
 // PostSearchName returns a fuzzy matched array of imis_id given a first name and or last name
@@ -90,11 +90,13 @@ func PostSearchName(w http.ResponseWriter, r *http.Request) {
 	var (
 		nameQuery    members.NameQuery
 		searchResult []map[string]interface{}
+		payload      ResponseValues
 	)
 	err := decodeAndValidate(r, &nameQuery)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		payload.Error = err.Error()
+		json.NewEncoder(w).Encode(payload)
 		return
 	}
 	searchResult, err = membersService.SearchName(nameQuery)
@@ -102,7 +104,7 @@ func PostSearchName(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
-	payload := ResponseValues{searchResult, ""}
+	payload.Values = searchResult
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payload)

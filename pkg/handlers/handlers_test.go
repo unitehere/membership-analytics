@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/unitehere/membership-analytics/pkg/services/members"
 )
 
 // r.Get("/ssn", handlers.GetSearchSSN)
@@ -60,4 +61,8 @@ func (s mockService) SearchSSN(ssn string) ([]map[string]interface{}, error) {
 		return []map[string]interface{}{map[string]interface{}{"imis_id": "5962"}}, nil
 	}
 	return []map[string]interface{}{}, nil // else it found nothing
+}
+
+func (s mockService) SearchName(query members.NameQuery) ([]map[string]interface{}, error) {
+	return []map[string]interface{}{}, nil
 }
