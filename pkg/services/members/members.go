@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"sync"
 
 	"gopkg.in/olivere/elastic.v5"
@@ -41,7 +40,7 @@ type SSNQuery struct {
 }
 
 // Validate validates that either firstName or lastName exists
-func (t NameQuery) Validate(r *http.Request) error {
+func (t NameQuery) Validate() error {
 	if govalidator.IsNull(t.FirstName) && govalidator.IsNull(t.LastName) {
 		return errInvalidName
 	}
@@ -49,7 +48,7 @@ func (t NameQuery) Validate(r *http.Request) error {
 }
 
 // Validate validates that an ssn of atleast length of 7 exists
-func (t SSNQuery) Validate(r *http.Request) error {
+func (t SSNQuery) Validate() error {
 	if govalidator.IsNull(t.SSN) || govalidator.StringLength(t.SSN, "0", "7") {
 		return errInvalidSSN
 	}

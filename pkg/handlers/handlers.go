@@ -14,7 +14,7 @@ var (
 // Query implements a Validate method used to
 // interact with all other query structs with Validate
 type Query interface {
-	Validate(r *http.Request) error
+	Validate() error
 }
 
 // The ResponseValues type describes the structure of the all responses.
@@ -22,6 +22,17 @@ type ResponseValues struct {
 	Values []map[string]interface{} `json:"values,omitempty"`
 	Error  string                   `json:"error,omitempty"`
 }
+
+//  TODO refactor so output is this
+// {
+//   "values" : {
+//     "members": {
+//       "count": 1,
+//       "data": [
+//         {"imis_id": "5962"}
+//       ]
+//     }
+// }
 
 func init() {
 	var err error
@@ -34,22 +45,23 @@ func init() {
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
-	ssnQuery := r.URL.Query()["q"]
-
-	if len(ssnQuery) == 0 || len(ssnQuery[0]) < 7 {
-		payload := ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}
+	var (
+		payload = ResponseValues{}
+	)
+	ssnQuery := members.SSNQuery{SSN: (r.URL.Query()["q"][0])}
+	err := ssnQuery.Validate()
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
 		json.NewEncoder(w).Encode(payload)
 		return
 	}
-
-	searchResult, err := membersService.SearchSSN(ssnQuery[0])
+	searchResult, err := membersService.SearchSSN(ssnQuery.SSN)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	payload := ResponseValues{}
 	payload.Values = searchResult
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -111,11 +123,12 @@ func PostSearchName(w http.ResponseWriter, r *http.Request) {
 }
 
 func decodeAndValidate(r *http.Request, q Query) error {
+
 	if err := json.NewDecoder(r.Body).Decode(q); err != nil {
 		return err
 	}
 	defer r.Body.Close()
-	return q.Validate(r)
+	return q.Validate()
 }
 
 func writeError(w http.ResponseWriter, status int, err error) {
