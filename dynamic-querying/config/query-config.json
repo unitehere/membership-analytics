@@ -1,73 +1,68 @@
-[
-  {
-    "id": 1,
-    "query_base": "{ \"min_score\": 4, \"size\": 200, \"query\": { \"bool\": {} } }",
-    "query_path": "query;bool",
-    "fields": [
-      { "field_name": "last_name",
-        "apply": true,
-        "query_text": [
-          {
-            "json": "{ \"should\": [ { \"fuzzy\": { \"lastname\": { \"term\": \"{VALUE}\" } } } ] }",
-            "value_path": "fuzzy;lastname;term"
-          },
-          {
-            "json": "{ \"must\": [ { \"match\": { \"lastname.phonetic\": { \"query\": \"{VALUE}\", \"boost\": 10, \"fuzziness\": 4 } } } ] }",
-            "value_path": "match;lastname.phonetic;query"
-          }
-        ]
+{
+  "base_json": "{ \"min_score\": 0, \"size\": 200, \"query\": { \"bool\": {} } }",
+  "base_query_path": "query;bool",
+  "last_name": {
+    "apply": true,
+    "min_score_adjustment": 2,
+    "query_text": [
+      {
+        "json": "{ \"should\": [ { \"fuzzy\": { \"last_name\": { \"term\": \"{VALUE}\" } } } ] }",
+        "value_path": "fuzzy;lastname;term"
       },
-      { "field_name": "first_name",
-        "apply": true,
-        "query_text": [
-          {
-            "json": "{ \"should\": [ { \"match\": { \"firstname.phonetic\": { \"query\": \"{VALUE}\" } } } ] }",
-            "value_path": "match;firstname.phonetic;query"
-          }
-        ]
-      },
-      { "field_name": "employers.employee_id", "apply": false, "query_text": [] },
-      { "field_name": "employers.employer_name", "apply": false, "query_text": [] },
-      { "field_name": "employers.classification", "apply": false, "query_text": [] },
-      { "field_name": "addresses.state_province", "apply": false, "query_text": [] }
+      {
+        "json": "{ \"must\": [ { \"match\": { \"last_name.phonetic\": { \"query\": \"{VALUE}\", \"boost\": 10, \"fuzziness\": 4 } } } ] }",
+        "value_path": "match;lastname.phonetic;query"
+      }
     ]
   },
-  {
-    "id": 2,
-    "query_base": "{ \"min_score\": 4, \"size\": 100, \"query\": { \"bool\": {} } }",
-    "query_path": "query;bool",
-    "fields": [
-      { "field_name": "last_name", "apply": false, "query_text": [] },
-      { "field_name": "first_name", "apply": false, "query_text": [] },
-      { "field_name": "employers.employee_id", "apply": false, "query_text": [] },
-      { "field_name": "employers.employer_name", "apply": false, "query_text": [] },
-      { "field_name": "employers.classification", "apply": false, "query_text": [] },
-      { "field_name": "addresses.state_province", "apply": false, "query_text": [] }
+  "first_name": {
+    "apply": true,
+    "min_score_adjustment": 2,
+    "query_text": [
+      {
+        "json": "{ \"should\": [ { \"match\": { \"first_name.phonetic\": { \"query\": \"{VALUE}\" } } } ] }",
+        "value_path": "match;firstname.phonetic;query"
+      }
     ]
   },
-  {
-    "id": 3,
-    "query_base": "{ \"min_score\": 4, \"size\": 200, \"query\": { \"bool\": {} } }",
-    "query_path": "query;bool",
-    "fields": [
-      { "field_name": "last_name",
-        "apply": true,
-        "query_text": [
-          {
-            "json": "{ \"should\": [ { \"fuzzy\": { \"lastname\": { \"term\": \"{VALUE}\" } } } ] }",
-            "value_path": "fuzzy;lastname;term"
-          },
-          {
-            "json": "{ \"should\": [ { \"match\": { \"lastname.phonetic\": { \"query\": \"{VALUE}\", \"boost\": 10, \"fuzziness\": 4 } } } ] }",
-            "value_path": "match;lastname.phonetic;query"
-          }
-        ]
-      },
-      { "field_name": "first_name", "apply": false, "query_text": [] },
-      { "field_name": "employers.employee_id", "apply": false, "query_text": [] },
-      { "field_name": "employers.employer_name", "apply": false, "query_text": [] },
-      { "field_name": "employers.classification", "apply": false, "query_text": [] },
-      { "field_name": "addresses.state_province", "apply": false, "query_text": [] }
+  "employer_id": {
+    "apply": false,
+    "min_score_adjustment": 1,
+    "query_text": [
+      {
+        "json": "{ \"should\": [ { \"match\": { \"employers.employer_id\": { \"query\": \"{VALUE}\" } } } ] }",
+        "value_path": "match;employers.employer_id;query"
+      }
+    ]
+  },
+  "employer_name": {
+    "apply": false,
+    "min_score_adjustment": 1,
+    "query_text": [
+      {
+        "json": "{ \"should\": [ { \"match\": { \"employers.employer_name\": { \"query\": \"{VALUE}\" } } } ] }",
+        "value_path": "match;employers.employer_name;query"
+      }
+    ]
+  },
+  "classification": {
+    "apply": false,
+    "min_score_adjustment": 1,
+    "query_text": [
+      {
+        "json": "{ \"should\": [ { \"match\": { \"employers.classification\": { \"query\": \"{VALUE}\" } } } ] }",
+        "value_path": "match;employers.classification;query"
+      }
+    ]
+  },
+  "state_province": {
+    "apply": false,
+    "min_score_adjustment": 2,
+    "query_text": [
+      {
+        "json": "{ \"should\": [ { \"match\": { \"addresses.state_province\": { \"query\": \"{VALUE}\" } } } ] }",
+        "value_path": "match;addresses.state_province;query"
+      }
     ]
   }
-]
+}

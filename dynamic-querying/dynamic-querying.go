@@ -10,16 +10,20 @@ import (
 )
 
 // Mimics the JSON structure in the 'query-config.json' file.
-type dynamicQuery struct {
-  Id int `json:"id"`
-  Query_base string `json:"query_base"`
-  Query_path string `json:"query_path"`
-  Fields []dynamicQueryFields `json:"fields"`
+type queryConfig struct {
+  Base_json string `json:"base_json"`
+  Base_query_path string `json:"base_query_path"`
+  Last_name queryConfigField `json:"last_name"`
+  First_name queryConfigField `json:"first_name"`
+  Employer_id queryConfigField `json:"employer_id"`
+  Employer_name queryConfigField `json:"employer_name"`
+  Classification queryConfigField `json:"classification"`
+  State_province queryConfigField `json:"state_province"`
 }
 
-type dynamicQueryFields struct {
-  Field_name string `json:"field_name"`
-  Apply bool        `json:"apply"`
+type queryConfigField struct {
+  Apply bool `json:"apply"`
+  Min_score_adjustment int `json:"min_score_adjustment"`
   Query_text []queryText `json:"query_text"`
 }
 
@@ -40,14 +44,14 @@ type SearchRequest struct {
 func DynamicQuery(req []SearchRequest) (elasticQueryBody string, err error) {
   // First uses the request to locate the appropriate
   // "query configuration" to use to build the elastic query.
-  queryOpts, err := findQueryConfig(req)
-  if err != nil {
-    return "", err
-  }
+  // queryOpts, err := findQueryConfig(req)
+  // if err != nil {
+  //   return "", err
+  // }
 
   // Passes the found query configuration and the SearchRequest array
   // to a function that returns the fully-built "elastic query" as a string.
-  elasticQuery, err := buildElasticQuery(queryOpts, req)
+  elasticQuery, err := buildElasticQuery(req)
   if err != nil {
     return "", err
   }
@@ -56,89 +60,95 @@ func DynamicQuery(req []SearchRequest) (elasticQueryBody string, err error) {
   return elasticQuery, nil
 }
 
-func findQueryConfig(req []SearchRequest) (res dynamicQuery, err error) {
-  configurations, err := loadSearchTermConfigurations()
+// func findQueryConfig(req []SearchRequest) (res dynamicQuery, err error) {
+//   configurations, err := loadSearchTermConfigurations()
+//   if err != nil {
+//     return dynamicQuery{}, err
+//   }
+//
+//   queryOptions := dynamicQuery{}
+//
+//   // Searches each config row looking for the appropriate query settings
+//   // using the search request data.
+//   for _, configRow := range configurations {
+//
+//     // Assumes current config row is the correct one, until:
+//     //  - Request contains a search term not in the config row
+//     //  - Request does not contain a search term the config row expects
+//     configRowFound := true
+//
+//     for _, configField := range configRow.Fields {
+//       // Assumes field in configuration row is not in req row, until proven otherwise.
+//       configFieldFound := false
+//
+//       for _, reqRow := range req {
+//         if reqRow.Field_name == configField.Field_name {
+//           // Config field present in the client search request
+//           configFieldFound = true
+//           if !configField.Apply {
+//             // Config field not applied in this config row
+//             configRowFound = false
+//           }
+//         }
+//       }
+//
+//       if !configFieldFound && configField.Apply {
+//         // Config field not present in the client search request,
+//         // but the config row expects it to be applied.
+//         configRowFound = false
+//       }
+//     }
+//
+//     if configRowFound {
+//       queryOptions = configRow
+//     }
+//   }
+//
+//   return queryOptions, nil
+// }
+
+func buildElasticQuery(req []SearchRequest) (elasticQueryString string, err error) {
+  queryConfiguration, err := loadSearchTermConfigurations()
   if err != nil {
-    return dynamicQuery{}, err
+    return "", err
   }
-
-  queryOptions := dynamicQuery{}
-
-  // Searches each config row looking for the appropriate query settings
-  // using the search request data.
-  for _, configRow := range configurations {
-
-    // Assumes current config row is the correct one, until:
-    //  - Request contains a search term not in the config row
-    //  - Request does not contain a search term the config row expects
-    configRowFound := true
-
-    for _, configField := range configRow.Fields {
-      // Assumes field in configuration row is not in req row, until proven otherwise.
-      configFieldFound := false
-
-      for _, reqRow := range req {
-        if reqRow.Field_name == configField.Field_name {
-          // Config field present in the client search request
-          configFieldFound = true
-          if !configField.Apply {
-            // Config field not applied in this config row
-            configRowFound = false
-          }
-        }
-      }
-
-      if !configFieldFound && configField.Apply {
-        // Config field not present in the client search request,
-        // but the config row expects it to be applied.
-        configRowFound = false
-      }
-    }
-
-    if configRowFound {
-      queryOptions = configRow
-    }
-  }
-
-  return queryOptions, nil
-}
-
-func buildElasticQuery(queryOpts dynamicQuery, req []SearchRequest) (elasticQueryString string, err error) {
 
   queryFieldJson := gabs.New()
 
   for _, reqField := range req {
-    for _, configField := range queryOpts.Fields {
-      if configField.Field_name == reqField.Field_name {
-        for _, queryTextRow := range configField.Query_text {
-          queryTextJson, err := gabs.ParseJSON([]byte(queryTextRow.Json))
-
-          children, _ := queryTextJson.ChildrenMap()
-          for key, child := range children {
-            arrayIndex := 0
-
-            if queryFieldJson.Exists(key) {
-              arrayIndex, err = queryFieldJson.ArrayCount(key)
-            }
-
-            if !queryFieldJson.Exists(key) {
-              queryFieldJson.Array(key)
-            }
-
-            err := incorporateJSON(&queryFieldJson, child.Index(0).String(), key, arrayIndex, queryTextRow.Value_path, reqField)
-            if err != nil {
-              log.Fatal(err)
-              return "", err
-            }
-          }
-
-          if err != nil {
-            log.Fatal(err)
-            return "", err
-          }
-        }
-      }
-    }
+    configField := queryConfiguration[reqField.Field_name]
+    
+    // for _, configField := range queryOpts.Fields {
+    //   if configField.Field_name == reqField.Field_name {
+    //     for _, queryTextRow := range configField.Query_text {
+    //       queryTextJson, err := gabs.ParseJSON([]byte(queryTextRow.Json))
+    //
+    //       children, _ := queryTextJson.ChildrenMap()
+    //       for key, child := range children {
+    //         arrayIndex := 0
+    //
+    //         if queryFieldJson.Exists(key) {
+    //           arrayIndex, err = queryFieldJson.ArrayCount(key)
+    //         }
+    //
+    //         if !queryFieldJson.Exists(key) {
+    //           queryFieldJson.Array(key)
+    //         }
+    //
+    //         err := incorporateJSON(&queryFieldJson, child.Index(0).String(), key, arrayIndex, queryTextRow.Value_path, reqField)
+    //         if err != nil {
+    //           log.Fatal(err)
+    //           return "", err
+    //         }
+    //       }
+    //
+    //       if err != nil {
+    //         log.Fatal(err)
+    //         return "", err
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   finalElasticQuery, err := gabs.ParseJSON([]byte(queryOpts.Query_base))
@@ -172,7 +182,7 @@ func loadSearchTermConfigurations() (res []dynamicQuery, err error) {
     return nil, err
 	}
 
-  var jsonOutput []dynamicQuery
+  var jsonOutput queryConfig
   json.Unmarshal(rawJSONBytes, &jsonOutput)
 
   return jsonOutput, nil
