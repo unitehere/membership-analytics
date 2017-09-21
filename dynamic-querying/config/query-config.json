@@ -2,31 +2,28 @@
   "base_json": "{ \"min_score\": 0, \"size\": 200, \"query\": { \"bool\": {} } }",
   "base_query_path": "query;bool",
   "last_name": {
-    "apply": true,
     "min_score_adjustment": 2,
     "query_text": [
       {
         "json": "{ \"should\": [ { \"fuzzy\": { \"last_name\": { \"term\": \"{VALUE}\" } } } ] }",
-        "value_path": "fuzzy;lastname;term"
+        "value_path": "fuzzy;last_name;term"
       },
       {
         "json": "{ \"must\": [ { \"match\": { \"last_name.phonetic\": { \"query\": \"{VALUE}\", \"boost\": 10, \"fuzziness\": 4 } } } ] }",
-        "value_path": "match;lastname.phonetic;query"
+        "value_path": "match;last_name.phonetic;query"
       }
     ]
   },
   "first_name": {
-    "apply": true,
     "min_score_adjustment": 2,
     "query_text": [
       {
         "json": "{ \"should\": [ { \"match\": { \"first_name.phonetic\": { \"query\": \"{VALUE}\" } } } ] }",
-        "value_path": "match;firstname.phonetic;query"
+        "value_path": "match;first_name.phonetic;query"
       }
     ]
   },
   "employer_id": {
-    "apply": false,
     "min_score_adjustment": 1,
     "query_text": [
       {
@@ -36,7 +33,6 @@
     ]
   },
   "employer_name": {
-    "apply": false,
     "min_score_adjustment": 1,
     "query_text": [
       {
@@ -46,7 +42,6 @@
     ]
   },
   "classification": {
-    "apply": false,
     "min_score_adjustment": 1,
     "query_text": [
       {
@@ -56,7 +51,6 @@
     ]
   },
   "state_province": {
-    "apply": false,
     "min_score_adjustment": 2,
     "query_text": [
       {
