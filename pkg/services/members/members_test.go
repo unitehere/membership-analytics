@@ -40,7 +40,7 @@ func TestSearchSSN(t *testing.T) {
 
 		// this method can take any arg, as long as a request is made, the response will be
 		// read from testCase.testResponsePath
-		actualResult, err := s.SearchSSN("placeholder")
+		actualResult, err := s.SearchSSN(SSNQuery{"placeholder"})
 		assert.NoError(t, err)
 
 		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)

@@ -22,6 +22,7 @@ func TestGetSearchSSN(t *testing.T) {
 		{"123456", "TestGetSearchSSN/invalidinput_response.json", 400},
 		{"123456789", "TestGetSearchSSN/onefound_response.json", 200},
 		{"555555555", "TestGetSearchSSN/notfound_response.json", 200},
+		{"404040404", "TestGetSearchSSN/multiplefound_response.json", 200},
 	}
 	membersService = mockService{}
 
@@ -56,10 +57,12 @@ func TestGetSearchSSN(t *testing.T) {
 type mockService struct {
 }
 
-func (s mockService) SearchSSN(placeholder string) (map[string]members.Member, error) {
+func (s mockService) SearchSSN(ssnQuery members.SSNQuery) (map[string]members.Member, error) {
 	var result []map[string]interface{}
-	if placeholder == "123456789" { // for handlers test, if one found
+	if ssnQuery.SSN == "123456789" { // for handlers test, if one found
 		result = []map[string]interface{}{map[string]interface{}{"imis_id": "5962"}}
+	} else if ssnQuery.SSN == "404040404" {
+		result = []map[string]interface{}{map[string]interface{}{"imis_id": "5962"}, map[string]interface{}{"imis_id": "5965"}}
 	} else { // for handlers test, if none found
 		result = []map[string]interface{}{}
 	}
@@ -67,6 +70,6 @@ func (s mockService) SearchSSN(placeholder string) (map[string]members.Member, e
 	return map[string]members.Member{"members": member}, nil
 }
 
-func (s mockService) SearchName(placeholder members.NameQuery) (map[string]members.Member, error) {
+func (s mockService) SearchName(nameQuery members.NameQuery) (map[string]members.Member, error) {
 	return map[string]members.Member{}, nil
 }

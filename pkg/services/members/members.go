@@ -20,7 +20,7 @@ var (
 
 // Service interface for all simple member searches
 type Service interface {
-	SearchSSN(ssn string) (map[string]Member, error)
+	SearchSSN(ssnQuery SSNQuery) (map[string]Member, error)
 	SearchName(query NameQuery) (map[string]Member, error)
 }
 
@@ -79,10 +79,10 @@ func Client() (Service, error) {
 }
 
 // SearchSSN takes in a ssn as a string and returns an *elastic.SearchResult or error
-func (s *service) SearchSSN(ssn string) (map[string]Member, error) {
+func (s *service) SearchSSN(ssnQuery SSNQuery) (map[string]Member, error) {
 	ctx := context.Background()
 
-	query := elastic.NewMatchQuery("demographics.ssn", ssn).Fuzziness("Auto")
+	query := elastic.NewMatchQuery("demographics.ssn", ssnQuery.SSN).Fuzziness("Auto")
 
 	searchResult, err := s.client.Search().
 		Index(config.Values.Index).

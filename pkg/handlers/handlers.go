@@ -45,7 +45,7 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(payload)
 		return
 	}
-	searchResult, err := membersService.SearchSSN(ssnQuery.SSN)
+	searchResult, err := membersService.SearchSSN(ssnQuery)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
@@ -76,7 +76,7 @@ func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(payload)
 		return
 	}
-	searchResult, err = membersService.SearchSSN(ssnQuery.SSN)
+	searchResult, err = membersService.SearchSSN(ssnQuery)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
