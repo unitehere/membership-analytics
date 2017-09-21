@@ -11,6 +11,7 @@ import (
 
 // The Configuration type describes the configuration variables
 type Configuration struct {
+	ElasticURL      string
 	ElasticUsername string
 	ElasticPassword string
 	Index           string
