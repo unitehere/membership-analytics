@@ -13,7 +13,7 @@ var (
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values []map[string]interface{} `json:"values,omitempty"`
+	Values []map[string]interface{} `json:"values"`
 	Error  string                   `json:"error,omitempty"`
 }
 
