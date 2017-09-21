@@ -44,11 +44,11 @@ func TestSearchSSN(t *testing.T) {
 		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
 		assert.NoError(t, err)
 
-		var expectedResult []map[string]interface{}
+		var expectedResult map[string]Member
 		err = json.Unmarshal(expectedResultBytes, &expectedResult)
 		assert.NoError(t, err)
 
-		assert.Equal(t, expectedResult, actualResult)
+		assert.Equalf(t, expectedResult, actualResult, "Check out %s", testCase.expectedResultPath)
 	}
 }
 
