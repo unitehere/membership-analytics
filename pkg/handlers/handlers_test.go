@@ -18,17 +18,10 @@ func TestGetSearchSSN(t *testing.T) {
 		expectedResultPath string
 		status             int
 	}{
-<<<<<<< HEAD
 		{"", "TestGetSearchSSN/invalidinput_response.json", 400},
 		{"123456", "TestGetSearchSSN/invalidinput_response.json", 400},
 		{"123456789", "TestGetSearchSSN/onefound_response.json", 200},
 		{"555555555", "TestGetSearchSSN/notfound_response.json", 200},
-=======
-	// {"", "TestSearchSSN/invalidinput_response.json", 400},
-	// {"123456", "TestSearchSSN/invalidinput_response.json", 400},
-	// {"123456789", "TestSearchSSN/onefound_response.json", 200},
-	// {"555555555", "TestSearchSSN/notfound_response.json", 200},
->>>>>>> Fix tests to adhere to new response format
 	}
 	membersService = mockService{}
 
@@ -64,7 +57,14 @@ type mockService struct {
 }
 
 func (s mockService) SearchSSN(placeholder string) (map[string]members.Member, error) {
-	return map[string]members.Member{}, nil
+	var result []map[string]interface{}
+	if placeholder == "123456789" { // for handlers test, if one found
+		result = []map[string]interface{}{map[string]interface{}{"imis_id": "5962"}}
+	} else { // for handlers test, if none found
+		result = []map[string]interface{}{}
+	}
+	member := members.Member{Data: result, TotalHits: int64(len(result))}
+	return map[string]members.Member{"members": member}, nil
 }
 
 func (s mockService) SearchName(placeholder members.NameQuery) (map[string]members.Member, error) {
