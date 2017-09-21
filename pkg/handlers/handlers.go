@@ -19,20 +19,14 @@ type Query interface {
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
+<<<<<<< HEAD
 	Values []map[string]interface{} `json:"values"`
 	Error  string                   `json:"error,omitempty"`
+=======
+	Values interface{} `json:"values,omitempty"`
+	Error  string      `json:"error,omitempty"`
+>>>>>>> Refactor to include total hits in response
 }
-
-//  TODO refactor so output is this
-// {
-//   "values" : {
-//     "members": {
-//       "count": 1,
-//       "data": [
-//         {"imis_id": "5962"}
-//       ]
-//     }
-// }
 
 func init() {
 	var err error
