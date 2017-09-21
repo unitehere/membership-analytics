@@ -3,79 +3,66 @@ package dq
 import (
   "io/ioutil"
   "log"
-  "sort"
-  "strconv"
   "strings"
-  // "fmt"
   "encoding/json"
   "path/filepath"
+  "github.com/Jeffail/gabs"
 )
 
-// Option 1 is much more configurable and flexible, but also more complex.
-type dynamicQueryResult struct {
-  Options dynamicQueryOpt1
-  ElasticQuery string
+// Mimics the JSON structure in the 'query-config.json' file.
+type dynamicQuery struct {
+  Id int `json:"id"`
+  Query_base string `json:"query_base"`
+  Query_path string `json:"query_path"`
+  Fields []dynamicQueryFields `json:"fields"`
 }
 
-type dynamicQueryFieldsOpt1 struct {
+type dynamicQueryFields struct {
   Field_name string `json:"field_name"`
   Apply bool        `json:"apply"`
-  Field_type string `json:"field_type"`
-  Boost int         `json:"boost"`
-  Fuzziness float64 `json:"fuzziness"`
-  Analyzer string   `json:"analyzer"`
-}
-
-type dynamicQueryOpt1 struct {
-  Id int `json:"id"`
-  Min_score int `json:"min_score"`
-  Size int `json:"size"`
-  Fields []dynamicQueryFieldsOpt1 `json:"fields"`
-}
-
-// ***NOT USED***
-// Option 2 is much simpler, but not configurable for different
-// combinations of search terms
-// type dynamicQueryOpt2 struct {
-//   field_name string
-//   field_type string
-//   boost int
-//   fuzziness float64
-//   analyzer string
-// }
-
-type SearchRequest struct {
-  Field_name string
-  Value_text string
-  Value_number float64
+  Query_text []queryText `json:"query_text"`
 }
 
 type queryText struct {
-  Field_name string
-  Query_text string
+  Json string `json:"json"`
+  Value_path string `json:"value_path"`
 }
 
+// Data structure of the search requests (application.go file also uses this Type)
+type SearchRequest struct {
+  Field_name string `json:"field_name"`
+  Value string `json:"value"`
+}
+
+// Only library function publicly exposed
+// Takes a SearchRequest array parameter, and dynamically
+// builds (and returns) the elastic query body.
 func DynamicQuery(req []SearchRequest) (elasticQueryBody string, err error) {
+  // First uses the request to locate the appropriate
+  // "query configuration" to use to build the elastic query.
   queryOpts, err := findQueryConfig(req)
   if err != nil {
     return "", err
   }
 
+  // Passes the found query configuration and the SearchRequest array
+  // to a function that returns the fully-built "elastic query" as a string.
   elasticQuery, err := buildElasticQuery(queryOpts, req)
   if err != nil {
     return "", err
   }
 
+  // application.go uses this as the body to pass to the elasticsearch service.
   return elasticQuery, nil
 }
 
-func findQueryConfig(req []SearchRequest) (res dynamicQueryOpt1, err error) {
+func findQueryConfig(req []SearchRequest) (res dynamicQuery, err error) {
   configurations, err := loadSearchTermConfigurations()
   if err != nil {
-    return dynamicQueryOpt1{}, err
+    return dynamicQuery{}, err
   }
 
-  queryOptions := dynamicQueryOpt1{}
+  queryOptions := dynamicQuery{}
 
   // Searches each config row looking for the appropriate query settings
   // using the search request data.
@@ -90,15 +77,15 @@ func findQueryConfig(req []SearchRequest) (res dynamicQueryOpt1, err error) {
       // Assumes field in configuration row is not in req row, until proven otherwise.
       configFieldFound := false
 
-      reqRowIndex := sort.Search(len(req), func(i int) bool { return req[i].Field_name == configField.Field_name })
-      if reqRowIndex != len(req) {
-        // Config field present in the client search request
-        configFieldFound = true
-        if !configField.Apply {
-          // Config field not applied in this config row
-          configRowFound = false
+      for _, reqRow := range req {
+        if reqRow.Field_name == configField.Field_name {
+          // Config field present in the client search request
+          configFieldFound = true
+          if !configField.Apply {
+            // Config field not applied in this config row
+            configRowFound = false
+          }
         }
-
       }
 
       if !configFieldFound && configField.Apply {
@@ -116,75 +103,92 @@ func findQueryConfig(req []SearchRequest) (res dynamicQueryOpt1, err error) {
   return queryOptions, nil
 }
 
-func buildElasticQuery(queryOpts dynamicQueryOpt1, req []SearchRequest) (elasticQueryString string, err error) {
-  queryTextConfig, err := loadQueryTextConfigurations()
-  if err != nil {
-    log.Fatal(err)
-  }
-  initialQueryString := "{ \"min_score\": " + strconv.Itoa(queryOpts.Min_score) + ", \"size\": " + strconv.Itoa(queryOpts.Size) + " \"query\": { \"bool\": { \"should\": [ ${QUERY} ]} } } "
-  intermediateQueryString := ""
+func buildElasticQuery(queryOpts dynamicQuery, req []SearchRequest) (elasticQueryString string, err error) {
+
+  queryFieldJson := gabs.New()
 
   for _, reqField := range req {
     for _, configField := range queryOpts.Fields {
-      if reqField.Field_name == configField.Field_name {
-        for _, queryTextConfigField := range queryTextConfig {
-          if queryTextConfigField.Field_name == reqField.Field_name {
-            queryString := queryTextConfigField.Query_text
+      if configField.Field_name == reqField.Field_name {
+        for _, queryTextRow := range configField.Query_text {
+          queryTextJson, err := gabs.ParseJSON([]byte(queryTextRow.Json))
 
-            switch configField.Field_type {
-              case "string":
-                queryString = strings.Replace(queryString, "${VALUE}", reqField.Value_text, -1)
-              case "number":
-                queryString = strings.Replace(queryString, "${VALUE}", strconv.FormatFloat(reqField.Value_number, 'E', -1, 64), -1)
+          children, _ := queryTextJson.ChildrenMap()
+          for key, child := range children {
+            arrayIndex := 0
+
+            if queryFieldJson.Exists(key) {
+              arrayIndex, err = queryFieldJson.ArrayCount(key)
             }
-            queryString = strings.Replace(queryString, "${BOOST}", strconv.Itoa(configField.Boost), -1)
-            queryString = strings.Replace(queryString, "${FUZZINESS}", strconv.FormatFloat(configField.Fuzziness, 'E', -1, 64), -1)
-            intermediateQueryString = intermediateQueryString + queryString
+
+            if !queryFieldJson.Exists(key) {
+              queryFieldJson.Array(key)
+            }
+
+            err := incorporateJSON(&queryFieldJson, child.Index(0).String(), key, arrayIndex, queryTextRow.Value_path, reqField)
+            if err != nil {
+              log.Fatal(err)
+              return "", err
+            }
+          }
+
+          if err != nil {
+            log.Fatal(err)
+            return "", err
           }
         }
       }
     }
   }
 
-  finalQueryString := strings.Replace(initialQueryString, "${QUERY}", intermediateQueryString, -1)
+  finalElasticQuery, err := gabs.ParseJSON([]byte(queryOpts.Query_base))
+  if err != nil {
+    log.Fatal(err)
+    return "", err
+  }
+  finalElasticQuery.Set(queryFieldJson.Data(), strings.Split(queryOpts.Query_path,";")...)
 
-  return finalQueryString, nil
+  return finalElasticQuery.String(), nil
 }
 
-func loadSearchTermConfigurations() (res []dynamicQueryOpt1, err error) {
+func incorporateJSON(finalJsonObject **gabs.Container, jsonStringToAdd string, arrayToAddTo string, arrayIndexToAddTo int, path string, reqField SearchRequest) (err error) {
+  jsonToAdd, err := gabs.ParseJSON([]byte(jsonStringToAdd))
+  if err != nil {
+    log.Fatal(err)
+    return err
+  }
 
-	rawJSONBytes, err := loadJSONFileBytes("./dynamic-querying/config/query-config.json")
+  jsonToAdd.Set(reqField.Value, strings.Split(path, ";")...)
+  (*finalJsonObject).ArrayAppend(jsonToAdd.Data(), arrayToAddTo)
+
+  return
+}
+
+func loadSearchTermConfigurations() (res []dynamicQuery, err error) {
+
+	rawJSONBytes, err := LoadJSONFileBytes("./dynamic-querying/config/query-config.json")
 	if err != nil {
 		log.Fatal(err)
+    return nil, err
 	}
 
-  var jsonOutput []dynamicQueryOpt1
+  var jsonOutput []dynamicQuery
   json.Unmarshal(rawJSONBytes, &jsonOutput)
 
   return jsonOutput, nil
 }
 
-func loadQueryTextConfigurations() (res []queryText, err error) {
-  rawJSONBytes, err := loadJSONFileBytes("./dynamic-querying/config/query-text.json")
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  var queryTextConfig []queryText
-  json.Unmarshal(rawJSONBytes, &queryTextConfig)
-
-  return queryTextConfig, nil
-}
-
-func loadJSONFileBytes(relFilePath string) (rawFile []byte, err error) {
+func LoadJSONFileBytes(relFilePath string) (rawFile []byte, err error) {
   absPath, err := filepath.Abs(relFilePath)
   if err != nil {
     log.Fatal(err)
+    return nil, err
   }
 
   rawJSONBytes, err := ioutil.ReadFile(absPath)
   if err != nil {
     log.Fatal(err)
+    return nil, err
   }
 
   return rawJSONBytes, nil
