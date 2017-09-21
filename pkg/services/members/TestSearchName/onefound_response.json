@@ -1,0 +1,26 @@
+{
+  "took": 2,
+  "timed_out": false,
+  "_shards": {
+    "total": 5,
+    "successful": 5,
+    "failed": 0
+  },
+  "hits": {
+    "total": 1,
+    "max_score": 4.7851567,
+    "hits": [
+      {
+        "_index": "members-test",
+        "_type": "member",
+        "_id": "AV5ciu35hgTwphTEetvi",
+        "_score": 4.7851567,
+        "_source": {
+          "imis_id": "1337",
+          "last_name": "Mok",
+          "first_name": "Ka"
+        }
+      }
+    ]
+  }
+}

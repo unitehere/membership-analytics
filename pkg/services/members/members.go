@@ -123,7 +123,7 @@ func (s *service) SearchName(query NameQuery) (map[string]Member, error) {
 
 	for key, value := range mapping {
 		if value != "" {
-			elasticQuery = elasticQuery.Must(elastic.NewMatchQuery(key, value).Fuzziness("Auto"))
+			elasticQuery = elasticQuery.Must(elastic.NewMatchQuery(key, value).Fuzziness("AUTO"))
 		}
 	}
 

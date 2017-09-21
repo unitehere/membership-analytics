@@ -38,7 +38,9 @@ func TestSearchSSN(t *testing.T) {
 		s, err := MockService(ts.URL)
 		assert.NoError(t, err)
 
-		actualResult, err := s.SearchSSN("123456789")
+		// this method can take any arg, as long as a request is made, the response will be
+		// read from testCase.testResponsePath
+		actualResult, err := s.SearchSSN("placeholder")
 		assert.NoError(t, err)
 
 		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
@@ -52,6 +54,46 @@ func TestSearchSSN(t *testing.T) {
 	}
 }
 
+func TestSearchName(t *testing.T) {
+	cases := []struct {
+		testResponsePath   string
+		expectedResultPath string
+	}{
+		{"TestSearchName/notfound_response.json", "TestSearchName/notfound_expected.json"},
+		{"TestSearchName/onefound_response.json", "TestSearchName/onefound_expected.json"},
+		{"TestSearchName/multiplefound_response.json", "TestSearchName/multiplefound_expected.json"},
+	}
+
+	for _, testCase := range cases {
+		handler := http.NotFound
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			handler(w, r)
+		}))
+		defer ts.Close()
+
+		resp, err := ioutil.ReadFile(testCase.testResponsePath)
+		assert.NoError(t, err)
+
+		handler = func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(resp))
+		}
+
+		s, err := MockService(ts.URL)
+		assert.NoError(t, err)
+
+		actualResult, err := s.SearchName(NameQuery{})
+		assert.NoError(t, err)
+
+		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
+		assert.NoError(t, err)
+
+		var expectedResult map[string]Member
+		err = json.Unmarshal(expectedResultBytes, &expectedResult)
+		assert.NoError(t, err)
+
+		assert.Equalf(t, expectedResult, actualResult, "Check out %s", testCase.expectedResultPath)
+	}
+}
 func MockService(url string) (Service, error) {
 	client, err := elastic.NewSimpleClient(elastic.SetURL(url))
 	if err != nil {
