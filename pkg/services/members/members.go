@@ -20,12 +20,18 @@ var (
 
 // Service interface for all simple member searches
 type Service interface {
-	SearchSSN(ssn string) ([]map[string]interface{}, error)
-	SearchName(query NameQuery) ([]map[string]interface{}, error)
+	SearchSSN(ssn string) (map[string]Member, error)
+	SearchName(query NameQuery) (map[string]Member, error)
 }
 
 type service struct {
 	client *elastic.Client
+}
+
+// Member represents all responses returned by the service
+type Member struct {
+	Data      []map[string]interface{} `json:"data"`
+	TotalHits int64                    `json:"total_hits"`
 }
 
 // NameQuery is used in SearchName
@@ -73,7 +79,7 @@ func Client() (Service, error) {
 }
 
 // SearchSSN takes in a ssn as a string and returns an *elastic.SearchResult or error
-func (s *service) SearchSSN(ssn string) ([]map[string]interface{}, error) {
+func (s *service) SearchSSN(ssn string) (map[string]Member, error) {
 	ctx := context.Background()
 
 	query := elastic.NewMatchQuery("demographics.ssn", ssn).Fuzziness("Auto")
@@ -86,7 +92,7 @@ func (s *service) SearchSSN(ssn string) ([]map[string]interface{}, error) {
 		Do(ctx)
 
 	if err != nil {
-		return nil, err
+		return map[string]Member{}, err
 	}
 
 	resultLength := len(searchResult.Hits.Hits)
@@ -95,16 +101,18 @@ func (s *service) SearchSSN(ssn string) ([]map[string]interface{}, error) {
 		var data map[string]interface{}
 		err := json.Unmarshal(*hit.Source, &data)
 		if err != nil {
-			return nil, err
+			return map[string]Member{}, err
 		}
 		result[i] = data
 	}
 
-	return result, err
+	member := Member{Data: result, TotalHits: searchResult.Hits.TotalHits}
+
+	return map[string]Member{"members": member}, err
 }
 
 // SearchName takes in a ssn as a string and returns an *elastic.SearchResult or error
-func (s *service) SearchName(query NameQuery) ([]map[string]interface{}, error) {
+func (s *service) SearchName(query NameQuery) (map[string]Member, error) {
 	ctx := context.Background()
 
 	elasticQuery := elastic.NewBoolQuery()
@@ -126,7 +134,7 @@ func (s *service) SearchName(query NameQuery) ([]map[string]interface{}, error) 
 		Do(ctx)
 
 	if err != nil {
-		return nil, err
+		return map[string]Member{}, err
 	}
 
 	resultLength := len(searchResult.Hits.Hits)
@@ -135,9 +143,11 @@ func (s *service) SearchName(query NameQuery) ([]map[string]interface{}, error) 
 		var data map[string]interface{}
 		err := json.Unmarshal(*hit.Source, &data)
 		if err != nil {
-			return nil, err
+			return map[string]Member{}, err
 		}
 		result[i] = data
 	}
-	return result, nil
+
+	member := Member{Data: result, TotalHits: searchResult.Hits.TotalHits}
+	return map[string]Member{"members": member}, err
 }

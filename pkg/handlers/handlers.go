@@ -19,20 +19,9 @@ type Query interface {
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values []map[string]interface{} `json:"values,omitempty"`
-	Error  string                   `json:"error,omitempty"`
+	Values interface{} `json:"values,omitempty"`
+	Error  string      `json:"error,omitempty"`
 }
-
-//  TODO refactor so output is this
-// {
-//   "values" : {
-//     "members": {
-//       "count": 1,
-//       "data": [
-//         {"imis_id": "5962"}
-//       ]
-//     }
-// }
 
 func init() {
 	var err error
@@ -61,11 +50,14 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
-
 	payload.Values = searchResult
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(payload)
+	err = json.NewEncoder(w).Encode(payload)
+	if err != nil {
+		panic(err)
+	}
 	return
 }
 
@@ -74,7 +66,7 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
 	var (
 		ssnQuery     members.SSNQuery
-		searchResult []map[string]interface{}
+		searchResult map[string]members.Member
 		payload      ResponseValues
 	)
 	err := decodeAndValidate(r, &ssnQuery)
@@ -101,7 +93,7 @@ func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
 func PostSearchName(w http.ResponseWriter, r *http.Request) {
 	var (
 		nameQuery    members.NameQuery
-		searchResult []map[string]interface{}
+		searchResult map[string]members.Member
 		payload      ResponseValues
 	)
 	err := decodeAndValidate(r, &nameQuery)
