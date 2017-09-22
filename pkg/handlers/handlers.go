@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/unitehere/membership-analytics/pkg/services/members"
@@ -9,6 +10,7 @@ import (
 
 var (
 	membersService members.Service
+	errNoHits      = errors.New("No results were found")
 )
 
 // Query implements a Validate method used to
@@ -19,8 +21,8 @@ type Query interface {
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values interface{} `json:"values"`
-	Error  string      `json:"error,omitempty"`
+	Error   string          `json:"error,omitempty"`
+	Members *members.Member `json:"members,omitempty"`
 }
 
 func init() {
@@ -34,30 +36,33 @@ func init() {
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
-	payload := ResponseValues{Values: map[string]string{}}
+	var payload ResponseValues
+
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "    ")
 
 	ssnQuery := members.SSNQuery{SSN: (r.URL.Query()["q"][0])}
 	err := ssnQuery.Validate()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		payload.Error = err.Error()
-		json.NewEncoder(w).Encode(payload)
+		enc.Encode(payload)
 		return
 	}
+
 	searchResult, err := membersService.SearchSSN(ssnQuery)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
+	} else if searchResult.TotalHits > 0 {
+		payload.Members = &searchResult
+	} else {
+		payload.Error = errNoHits.Error()
 	}
-	payload.Values = searchResult
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(payload)
-	if err != nil {
-		panic(err)
-	}
-	return
+	enc.Encode(payload)
 }
 
 // PostSearchSSN returns a fuzzy matched array of imis_id given a ssn
@@ -65,27 +70,33 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
 	var (
 		ssnQuery     members.SSNQuery
-		searchResult map[string]members.Member
+		searchResult members.Member
+		payload      ResponseValues
 	)
-	payload := ResponseValues{Values: "map[string]string{}"}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "    ")
 
 	err := decodeAndValidate(r, &ssnQuery)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		payload.Error = err.Error()
-		json.NewEncoder(w).Encode(payload)
+		enc.Encode(payload)
 		return
 	}
+
 	searchResult, err = membersService.SearchSSN(ssnQuery)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
+	} else if searchResult.TotalHits > 0 {
+		payload.Members = &searchResult
+	} else {
+		payload.Error = errNoHits.Error()
 	}
 
-	payload.Values = searchResult
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(payload)
+	enc.Encode(payload)
 }
 
 // PostSearchName returns a fuzzy matched array of imis_id given a first name and or last name
@@ -93,30 +104,36 @@ func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
 func PostSearchName(w http.ResponseWriter, r *http.Request) {
 	var (
 		nameQuery    members.NameQuery
-		searchResult map[string]members.Member
+		searchResult members.Member
+		payload      ResponseValues
 	)
-	payload := ResponseValues{Values: map[string]string{}}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "    ")
 
 	err := decodeAndValidate(r, &nameQuery)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		payload.Error = err.Error()
-		json.NewEncoder(w).Encode(payload)
+		enc.Encode(payload)
 		return
 	}
+
 	searchResult, err = membersService.SearchName(nameQuery)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
+	} else if searchResult.TotalHits > 0 {
+		payload.Members = &searchResult
+	} else {
+		payload.Error = errNoHits.Error()
 	}
-	payload.Values = searchResult
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(payload)
+	enc.Encode(payload)
 }
 
 func decodeAndValidate(r *http.Request, q Query) error {
-
 	if err := json.NewDecoder(r.Body).Decode(q); err != nil {
 		return err
 	}
@@ -159,12 +176,4 @@ func decodeAndValidate(r *http.Request, q Query) error {
 func writeError(w http.ResponseWriter, status int, err error) {
 	w.WriteHeader(status)
 	w.Write([]byte(err.Error()))
-}
-
-func getValuesFromBody(r *http.Request) (map[string]interface{}, error) {
-	decoder := json.NewDecoder(r.Body)
-	var requestValues map[string]interface{}
-	err := decoder.Decode(&requestValues)
-	defer r.Body.Close()
-	return requestValues, err
 }
