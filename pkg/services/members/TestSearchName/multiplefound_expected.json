@@ -1,57 +1,55 @@
 {
-  "members": {
-    "data": [
-      {
-        "first_name": "Karen",
-        "imis_id": "14292",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Gregorio",
-        "imis_id": "31764",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Francisco",
-        "imis_id": "10676",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Maria",
-        "imis_id": "33648",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Luis",
-        "imis_id": "37924",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Alejandro",
-        "imis_id": "30893",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Fidelina",
-        "imis_id": "27286",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Ronald",
-        "imis_id": "28356",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Ana",
-        "imis_id": "3359",
-        "last_name": "Garcia"
-      },
-      {
-        "first_name": "Carlos",
-        "imis_id": "37917",
-        "last_name": "Garcia"
-      }
-    ],
-    "total_hits": 47
-  }
+  "data": [
+    {
+      "first_name": "Karen",
+      "imis_id": "14292",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Gregorio",
+      "imis_id": "31764",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Francisco",
+      "imis_id": "10676",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Maria",
+      "imis_id": "33648",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Luis",
+      "imis_id": "37924",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Alejandro",
+      "imis_id": "30893",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Fidelina",
+      "imis_id": "27286",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Ronald",
+      "imis_id": "28356",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Ana",
+      "imis_id": "3359",
+      "last_name": "Garcia"
+    },
+    {
+      "first_name": "Carlos",
+      "imis_id": "37917",
+      "last_name": "Garcia"
+    }
+  ],
+  "total_hits": 47
 }

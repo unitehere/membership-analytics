@@ -1,12 +1,10 @@
 {
-  "values": {
-    "members": {
-      "data": [
-        {
-          "imis_id": "5962"
-        }
-      ],
-      "total_hits": 1
-    }
+  "members": {
+    "data": [
+      {
+        "imis_id": "5962"
+      }
+    ],
+    "total_hits": 1
   }
 }

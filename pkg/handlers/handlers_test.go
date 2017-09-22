@@ -100,14 +100,14 @@ func TestPostSearchName(t *testing.T) {
 		err = json.Unmarshal(rr.Body.Bytes(), &response)
 		assert.NoError(t, err)
 
-		assert.Equal(t, expectedResult, response)
+		assert.Equalf(t, expectedResult, response, "Check out %s", testCase.expectedResultPath)
 	}
 }
 
 type mockService struct {
 }
 
-func (s mockService) SearchSSN(ssnQuery members.SSNQuery) (map[string]members.Member, error) {
+func (s mockService) SearchSSN(ssnQuery members.SSNQuery) (members.Member, error) {
 	var result []map[string]interface{}
 	if ssnQuery.SSN == "123456789" { // for handlers test, if one found
 		result = []map[string]interface{}{map[string]interface{}{"imis_id": "5962"}}
@@ -116,17 +116,15 @@ func (s mockService) SearchSSN(ssnQuery members.SSNQuery) (map[string]members.Me
 	} else { // for handlers test, if none found
 		result = []map[string]interface{}{}
 	}
-	member := members.Member{Data: result, TotalHits: int64(len(result))}
-	return map[string]members.Member{"members": member}, nil
+	return members.Member{Data: result, TotalHits: int64(len(result))}, nil
 }
 
-func (s mockService) SearchName(nameQuery members.NameQuery) (map[string]members.Member, error) {
+func (s mockService) SearchName(nameQuery members.NameQuery) (members.Member, error) {
 	var result []map[string]interface{}
 	if nameQuery.FirstName == "Alberto" { // handlers test, one found
 		result = []map[string]interface{}{map[string]interface{}{"imis_id": "18775", "first_name": "Alberto", "last_name": "Monteiro"}}
 	} else {
 		result = []map[string]interface{}{}
 	}
-	member := members.Member{Data: result, TotalHits: int64(len(result))}
-	return map[string]members.Member{"members": member}, nil
+	return members.Member{Data: result, TotalHits: int64(len(result))}, nil
 }

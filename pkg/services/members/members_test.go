@@ -46,7 +46,7 @@ func TestSearchSSN(t *testing.T) {
 		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
 		assert.NoError(t, err)
 
-		var expectedResult map[string]Member
+		var expectedResult Member
 		err = json.Unmarshal(expectedResultBytes, &expectedResult)
 		assert.NoError(t, err)
 
@@ -87,7 +87,7 @@ func TestSearchName(t *testing.T) {
 		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
 		assert.NoError(t, err)
 
-		var expectedResult map[string]Member
+		var expectedResult Member
 		err = json.Unmarshal(expectedResultBytes, &expectedResult)
 		assert.NoError(t, err)
 
