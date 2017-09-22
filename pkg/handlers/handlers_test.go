@@ -51,7 +51,7 @@ func TestGetSearchSSN(t *testing.T) {
 		err = json.Unmarshal(rr.Body.Bytes(), &response)
 		assert.NoError(t, err)
 
-		assert.Equal(t, expectedResult, response)
+		assert.Equalf(t, expectedResult, response, "Check out this case: %s", testCase.expectedResultPath)
 	}
 }
 

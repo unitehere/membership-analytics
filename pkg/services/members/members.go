@@ -147,7 +147,7 @@ func (s *service) SearchName(query NameQuery) (map[string]Member, error) {
 		}
 		result[i] = data
 	}
-
 	member := Member{Data: result, TotalHits: searchResult.Hits.TotalHits}
+
 	return map[string]Member{"members": member}, err
 }

@@ -19,8 +19,8 @@ type Query interface {
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values []map[string]interface{} `json:"values"`
-	Error  string                   `json:"error,omitempty"`
+	Values interface{} `json:"values"`
+	Error  string      `json:"error,omitempty"`
 }
 
 func init() {
@@ -34,9 +34,8 @@ func init() {
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
-	var (
-		payload = ResponseValues{}
-	)
+	payload := ResponseValues{Values: map[string]string{}}
+
 	ssnQuery := members.SSNQuery{SSN: (r.URL.Query()["q"][0])}
 	err := ssnQuery.Validate()
 	if err != nil {
@@ -67,8 +66,9 @@ func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
 	var (
 		ssnQuery     members.SSNQuery
 		searchResult map[string]members.Member
-		payload      ResponseValues
 	)
+	payload := ResponseValues{Values: "map[string]string{}"}
+
 	err := decodeAndValidate(r, &ssnQuery)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -94,8 +94,9 @@ func PostSearchName(w http.ResponseWriter, r *http.Request) {
 	var (
 		nameQuery    members.NameQuery
 		searchResult map[string]members.Member
-		payload      ResponseValues
 	)
+	payload := ResponseValues{Values: map[string]string{}}
+
 	err := decodeAndValidate(r, &nameQuery)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
