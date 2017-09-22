@@ -7,6 +7,8 @@ import (
   "encoding/json"
   "path/filepath"
   "github.com/Jeffail/gabs"
+  "net/http"
+  "strings"
 )
 
 type queryConfigField struct {
@@ -23,6 +25,48 @@ type queryText struct {
 type SearchRequest struct {
   Field_name string `json:"field_name"`
   Value string `json:"value"`
+}
+
+type ResponseValues struct {
+	Values []map[string]interface{} `json:"hits"`
+	Error  string                   `json:"error,omitempty"`
+}
+
+// Handles the POST request for member search
+func SearchMember(w http.ResponseWriter, r *http.Request) {
+	var data []SearchRequest
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+
+  enc := json.NewEncoder(w)
+  enc.SetIndent("", "    ")
+
+	elasticQueryBody, err := DynamicQuery(data)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	elasticHttp := &http.Client{}
+	bodyReader := strings.NewReader(elasticQueryBody)
+
+	req, err := http.NewRequest("POST", "https://elasticsearch.unitehere.org:9200/members/_search", bodyReader)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization","Basic bWVtYmVyc2hpcF9hbmFseXRpY3M6ckdjbkJqeHhZZzJvSlg=")
+	resp, err := elasticHttp.Do(req)
+
+	defer resp.Body.Close()
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+    writeError(w, http.StatusBadRequest, err)
+    return
+	}
+	fmt.Printf("%s\n", string(contents))
+
+	return
 }
 
 // Only library function publicly exposed
@@ -153,4 +197,9 @@ func LoadJSONFileBytes(relFilePath string) (rawFile []byte, err error) {
   }
 
   return rawJSONBytes, nil
+}
+
+func writeError(w http.ResponseWriter, status int, err error) {
+	w.WriteHeader(status)
+	w.Write([]byte(err.Error()))
 }

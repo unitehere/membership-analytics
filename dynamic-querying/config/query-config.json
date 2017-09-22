@@ -9,13 +9,13 @@
         "value_path": [ "fuzzy", "last_name", "term" ]
       },
       {
-        "json": "{ \"must\": [ { \"match\": { \"last_name.phonetic\": { \"query\": \"{VALUE}\", \"boost\": 10, \"fuzziness\": 4 } } } ] }",
+        "json": "{ \"must\": [ { \"match\": { \"last_name.phonetic\": { \"query\": \"{VALUE}\", \"boost\": 10, \"fuzziness\": 1 } } } ] }",
         "value_path": [ "match", "last_name.phonetic", "query" ]
       }
     ]
   },
   "first_name": {
-    "min_score_adjustment": 5,
+    "min_score_adjustment": 6,
     "query_text": [
       {
         "json": "{ \"should\": [ { \"match\": { \"first_name.phonetic\": { \"query\": \"{VALUE}\" } } } ] }",
