@@ -4,7 +4,6 @@ import (
   "fmt"
   "io/ioutil"
   "log"
-  "strings"
   "encoding/json"
   "path/filepath"
   "github.com/Jeffail/gabs"
@@ -17,7 +16,7 @@ type queryConfigField struct {
 
 type queryText struct {
   Json string `json:"json"`
-  Value_path string `json:"value_path"`
+  Value_path []string `json:"value_path"`
 }
 
 // Data structure of the search requests (application.go file also uses this Type)
@@ -71,9 +70,20 @@ func buildElasticQuery(req []SearchRequest) (elasticQueryString string, err erro
     return "", err
   }
   finalElasticQuery.Set(min_score, "min_score")
-  finalElasticQuery.Set(queryFieldJson.Data(), strings.Split(queryConfiguration["base_query_path"].(string),";")...)
+
+  baseQueryPath := convertPathToStringArray(queryConfiguration["base_query_path"].([]interface{}))
+  finalElasticQuery.Set(queryFieldJson.Data(), baseQueryPath...)
 
   return finalElasticQuery.String(), nil
+}
+
+func convertPathToStringArray(path []interface{}) (res []string) {
+  pathStringArray := []string{}
+  for _, pathRow := range path {
+    pathStringArray = append(pathStringArray, pathRow.(string))
+  }
+
+  return pathStringArray
 }
 
 func incorporateJSON(finalJsonObject **gabs.Container, configField queryConfigField, reqField SearchRequest) (err error) {
@@ -96,7 +106,8 @@ func incorporateJSON(finalJsonObject **gabs.Container, configField queryConfigFi
       if err != nil {
         fmt.Println(err)
       }
-      jsonToAdd.Set(reqField.Value, strings.Split(queryTextRow.Value_path, ";")...)
+
+      jsonToAdd.Set(reqField.Value, queryTextRow.Value_path...)
       (*finalJsonObject).ArrayAppend(jsonToAdd.Data(), key)
 
     }

@@ -1,16 +1,16 @@
 {
   "base_json": "{ \"min_score\": 0, \"size\": 200, \"query\": { \"bool\": {} } }",
-  "base_query_path": "query;bool",
+  "base_query_path": [ "query", "bool" ],
   "last_name": {
     "min_score_adjustment": 2,
     "query_text": [
       {
         "json": "{ \"should\": [ { \"fuzzy\": { \"last_name\": { \"term\": \"{VALUE}\" } } } ] }",
-        "value_path": "fuzzy;last_name;term"
+        "value_path": [ "fuzzy", "last_name", "term" ]
       },
       {
         "json": "{ \"must\": [ { \"match\": { \"last_name.phonetic\": { \"query\": \"{VALUE}\", \"boost\": 10, \"fuzziness\": 4 } } } ] }",
-        "value_path": "match;last_name.phonetic;query"
+        "value_path": [ "match", "last_name.phonetic", "query" ]
       }
     ]
   },
@@ -19,7 +19,7 @@
     "query_text": [
       {
         "json": "{ \"should\": [ { \"match\": { \"first_name.phonetic\": { \"query\": \"{VALUE}\" } } } ] }",
-        "value_path": "match;first_name.phonetic;query"
+        "value_path": [ "match", "first_name.phonetic", "query" ]
       }
     ]
   },
@@ -28,7 +28,7 @@
     "query_text": [
       {
         "json": "{ \"should\": [ { \"match\": { \"employers.employer_id\": { \"query\": \"{VALUE}\" } } } ] }",
-        "value_path": "match;employers.employer_id;query"
+        "value_path": [ "match", "employers.employer_id", "query" ]
       }
     ]
   },
@@ -37,7 +37,7 @@
     "query_text": [
       {
         "json": "{ \"should\": [ { \"match\": { \"employers.employer_name\": { \"query\": \"{VALUE}\" } } } ] }",
-        "value_path": "match;employers.employer_name;query"
+        "value_path": [ "match", "employers.employer_name", "query" ]
       }
     ]
   },
@@ -46,7 +46,7 @@
     "query_text": [
       {
         "json": "{ \"should\": [ { \"match\": { \"employers.classification\": { \"query\": \"{VALUE}\" } } } ] }",
-        "value_path": "match;employers.classification;query"
+        "value_path": [ "match", "employers.classification", "query" ]
       }
     ]
   },
@@ -55,7 +55,7 @@
     "query_text": [
       {
         "json": "{ \"should\": [ { \"match\": { \"addresses.state_province\": { \"query\": \"{VALUE}\" } } } ] }",
-        "value_path": "match;addresses.state_province;query"
+        "value_path": [ "match", "addresses.state_province", "query" ]
       }
     ]
   }
