@@ -47,7 +47,7 @@ func buildElasticQuery(req []SearchRequest) (elasticQueryString string, err erro
   if err != nil {
     return "", err
   }
-
+  min_score := 0
   queryFieldJson := gabs.New()
 
   for _, reqField := range req {
@@ -56,6 +56,7 @@ func buildElasticQuery(req []SearchRequest) (elasticQueryString string, err erro
       fmt.Println(err)
     }
 
+    min_score += configField.Min_score_adjustment
     err = incorporateJSON(&queryFieldJson, configField, reqField)
     if err != nil {
       log.Fatal(err)
@@ -69,6 +70,7 @@ func buildElasticQuery(req []SearchRequest) (elasticQueryString string, err erro
     log.Fatal(err)
     return "", err
   }
+  finalElasticQuery.Set(min_score, "min_score")
   finalElasticQuery.Set(queryFieldJson.Data(), strings.Split(queryConfiguration["base_query_path"].(string),";")...)
 
   return finalElasticQuery.String(), nil

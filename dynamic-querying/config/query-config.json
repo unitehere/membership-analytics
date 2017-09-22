@@ -15,7 +15,7 @@
     ]
   },
   "first_name": {
-    "min_score_adjustment": 2,
+    "min_score_adjustment": 5,
     "query_text": [
       {
         "json": "{ \"should\": [ { \"match\": { \"first_name.phonetic\": { \"query\": \"{VALUE}\" } } } ] }",
