@@ -94,7 +94,14 @@
             "other_language_src": { "type": "text" },
             "primary_language": { "type": "keyword" },
             "primary_language_src": { "type": "text" },
-            "ssn": { "type": "text" },
+            "ssn": {
+              "type": "text",
+              "fields": {
+                "raw": {
+                  "type":     "keyword"
+                }
+              }
+            },
             "ssn_src": { "type": "text" }
           }
         },
