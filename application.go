@@ -53,6 +53,8 @@ func main() {
 		r.Post("/ssn", handlers.PostSearchSSN)
 
 		r.Post("/name", handlers.PostSearchName)
+
+		r.Post("/member", dq.SearchMember)
 	})
 
 	r.Get("/health", GetHealth)
