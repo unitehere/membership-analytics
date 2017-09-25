@@ -2,5 +2,5 @@
   "ElasticURL": "localhost:9200",
   "ElasticUsername": "your_username",
   "ElasticPassword": "your_password",
-  "Index": "your-index"  
+  "Index": "your-index"
 }

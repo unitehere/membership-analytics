@@ -50,6 +50,8 @@ func main() {
 	r.Route("/search", func(r chi.Router) {
 		r.Get("/ssn", handlers.GetSearchSSN)
 		r.Post("/ssn", handlers.PostSearchSSN)
+
+		r.Post("/name", handlers.PostSearchName)
 	})
 
 	r.Get("/health", GetHealth)

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/unitehere/membership-analytics/pkg/services/members"
@@ -9,12 +10,19 @@ import (
 
 var (
 	membersService members.Service
+	errNoHits      = errors.New("No results were found")
 )
+
+// Query implements a Validate method used to
+// interact with all other query structs with Validate
+type Query interface {
+	Validate() error
+}
 
 // The ResponseValues type describes the structure of the all responses.
 type ResponseValues struct {
-	Values []map[string]interface{} `json:"values"`
-	Error  string                   `json:"error,omitempty"`
+	Error   string          `json:"error,omitempty"`
+	Members *members.Member `json:"members,omitempty"`
 }
 
 func init() {
@@ -28,65 +36,112 @@ func init() {
 // GetSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Get("/ssn", handlers.GetSearchSSN)
 func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
-	ssnQuery := r.URL.Query()["q"]
+	var payload ResponseValues
 
-	if len(ssnQuery) == 0 || len(ssnQuery[0]) < 7 {
-		payload := ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "    ")
+
+	ssnQuery := members.SSNQuery{SSN: (r.URL.Query()["q"][0])}
+	err := ssnQuery.Validate()
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(payload)
+		payload.Error = err.Error()
+		enc.Encode(payload)
 		return
 	}
 
-	searchResult, err := membersService.SearchSSN(ssnQuery[0])
+	searchResult, err := membersService.SearchSSN(ssnQuery)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
+	} else if searchResult.TotalHits > 0 {
+		payload.Members = &searchResult
+	} else {
+		payload.Error = errNoHits.Error()
 	}
 
-	payload := ResponseValues{}
-	payload.Values = searchResult
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(payload)
-	return
+	enc.Encode(payload)
 }
 
 // PostSearchSSN returns a fuzzy matched array of imis_id given a ssn
 // r.Post("/ssn", handlers.PostSearchSSN)
 func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
-	query, err := getValuesFromBody(r)
+	var (
+		ssnQuery     members.SSNQuery
+		searchResult members.Member
+		payload      ResponseValues
+	)
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "    ")
+
+	err := decodeAndValidate(r, &ssnQuery)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err)
+		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
+		enc.Encode(payload)
 		return
 	}
-	if ssn, ok := query["ssn"]; ok && len(ssn.(string)) >= 7 {
-		searchResult, err := membersService.SearchSSN(ssn.(string))
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, err)
-			return
-		}
 
-		payload := ResponseValues{}
-		payload.Values = searchResult
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(payload)
+	searchResult, err = membersService.SearchSSN(ssnQuery)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	} else if searchResult.TotalHits > 0 {
+		payload.Members = &searchResult
 	} else {
-		payload := ResponseValues{nil, "You need to pass in a ssn string of at least 7 digits as a q param"}
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(payload)
+		payload.Error = errNoHits.Error()
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	enc.Encode(payload)
+}
+
+// PostSearchName returns a fuzzy matched array of imis_id given a first name and or last name
+// r.Post("/name", handlers.PostSearchName)
+func PostSearchName(w http.ResponseWriter, r *http.Request) {
+	var (
+		nameQuery    members.NameQuery
+		searchResult members.Member
+		payload      ResponseValues
+	)
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "    ")
+
+	err := decodeAndValidate(r, &nameQuery)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
+		enc.Encode(payload)
+		return
+	}
+
+	searchResult, err = membersService.SearchName(nameQuery)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	} else if searchResult.TotalHits > 0 {
+		payload.Members = &searchResult
+	} else {
+		payload.Error = errNoHits.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	enc.Encode(payload)
+}
+
+func decodeAndValidate(r *http.Request, q Query) error {
+	if err := json.NewDecoder(r.Body).Decode(q); err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	return q.Validate()
 }
 
 func writeError(w http.ResponseWriter, status int, err error) {
 	w.WriteHeader(status)
 	w.Write([]byte(err.Error()))
-}
-
-func getValuesFromBody(r *http.Request) (map[string]interface{}, error) {
-	decoder := json.NewDecoder(r.Body)
-	var requestValues map[string]interface{}
-	err := decoder.Decode(&requestValues)
-	defer r.Body.Close()
-	return requestValues, err
 }
