@@ -8,6 +8,7 @@ import (
 )
 
 func TestInit(t *testing.T) {
+	assert.NotEmpty(t, Values.ElasticURL)
 	assert.NotEmpty(t, Values.ElasticUsername)
 	assert.NotEmpty(t, Values.ElasticPassword)
 	assert.NotEmpty(t, Values.Index)

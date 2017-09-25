@@ -67,7 +67,7 @@ func Client() (Service, error) {
 	var err error
 	clientInit.Do(func() {
 		client, err = elastic.NewClient(
-			elastic.SetURL("https://elasticsearch.unitehere.org:9200"),
+			elastic.SetURL(config.Values.ElasticURL),
 			elastic.SetBasicAuth(config.Values.ElasticUsername, config.Values.ElasticPassword),
 			elastic.SetSniff(false),
 			elastic.SetHealthcheck(false))
