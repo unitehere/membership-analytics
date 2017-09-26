@@ -28,13 +28,20 @@ type SearchRequest struct {
 }
 
 type ResponseValues struct {
-	Values []map[string]interface{} `json:"hits"`
-	Error  string                   `json:"error,omitempty"`
+  Error string
+  Members resultMembers
+}
+
+type resultMembers struct {
+	Data      []map[string]interface{} `json:"data"`
+	TotalHits int64                    `json:"total_hits"`
 }
 
 // Handles the POST request for member search
 func SearchMember(w http.ResponseWriter, r *http.Request) {
 	var data []SearchRequest
+
+  // Decodes the request body
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
@@ -44,45 +51,25 @@ func SearchMember(w http.ResponseWriter, r *http.Request) {
   enc := json.NewEncoder(w)
   enc.SetIndent("", "    ")
 
-	elasticQueryBody, err := DynamicQuery(data)
+  // Uses request body data to build the elastic query body
+	elasticQueryBody, err := buildElasticQuery(data)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	elasticHttp := &http.Client{}
-	bodyReader := strings.NewReader(elasticQueryBody)
-
-	req, err := http.NewRequest("POST", "https://elasticsearch.unitehere.org:9200/members/_search", bodyReader)
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization","Basic bWVtYmVyc2hpcF9hbmFseXRpY3M6ckdjbkJqeHhZZzJvSlg=")
-	resp, err := elasticHttp.Do(req)
-
-	defer resp.Body.Close()
-	contents, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+  // Queries the elastic service
+  payload, err := queryElasticService(elasticQueryBody)
+  if err != nil {
     writeError(w, http.StatusBadRequest, err)
     return
-	}
-	fmt.Printf("%s\n", string(contents))
-
-	return
-}
-
-// Only library function publicly exposed
-// Takes a SearchRequest array parameter, and dynamically
-// builds (and returns) the elastic query body.
-func DynamicQuery(req []SearchRequest) (elasticQueryBody string, err error) {
-
-  // Passes the found query configuration and the SearchRequest array
-  // to a function that returns the fully-built "elastic query" as a string.
-  elasticQuery, err := buildElasticQuery(req)
-  if err != nil {
-    return "", err
   }
 
-  // application.go uses this as the body to pass to the elasticsearch service.
-  return elasticQuery, nil
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  enc.Encode(payload)
+
+	return
 }
 
 func buildElasticQuery(req []SearchRequest) (elasticQueryString string, err error) {
@@ -119,6 +106,38 @@ func buildElasticQuery(req []SearchRequest) (elasticQueryString string, err erro
   finalElasticQuery.Set(queryFieldJson.Data(), baseQueryPath...)
 
   return finalElasticQuery.String(), nil
+}
+
+func queryElasticService(queryBody string) (res ResponseValues, err error) {
+
+  elasticHttp := &http.Client{}
+  bodyReader := strings.NewReader(queryBody)
+
+  req, err := http.NewRequest("POST", "https://elasticsearch.unitehere.org:9200/members/_search", bodyReader)
+  req.Header.Add("Content-Type", "application/json")
+  req.Header.Add("Authorization","Basic bWVtYmVyc2hpcF9hbmFseXRpY3M6ckdjbkJqeHhZZzJvSlg=")
+  resp, err := elasticHttp.Do(req)
+
+  defer resp.Body.Close()
+  contents, err := ioutil.ReadAll(resp.Body)
+  if err != nil {
+    return ResponseValues{}, err
+  }
+
+  var contentsJson map[string]interface{}
+  json.Unmarshal(contents, &contentsJson)
+
+  results, err := transformSearchResults(contentsJson)
+  if err != nil {
+    return ResponseValues{}, err
+  }
+
+  var payload ResponseValues
+  payload.Members = results
+  payload.Error = ""
+
+  return payload, nil
+
 }
 
 func convertPathToStringArray(path []interface{}) (res []string) {
@@ -197,6 +216,38 @@ func LoadJSONFileBytes(relFilePath string) (rawFile []byte, err error) {
   }
 
   return rawJSONBytes, nil
+}
+
+func transformSearchResults(searchResult map[string]interface{}) (resultMembers, error) {
+
+  hitsJsonBytes, err := json.Marshal(searchResult["hits"])
+  var hitsJson map[string]interface{}
+  json.Unmarshal(hitsJsonBytes, &hitsJson)
+
+  secondHitsJsonBytes, err := json.Marshal(hitsJson["hits"])
+  var secondHitsJson []map[string]interface{}
+  json.Unmarshal(secondHitsJsonBytes, &secondHitsJson)
+
+  resultLength := len(secondHitsJson)
+  totalHits := int64(hitsJson["total"].(float64))
+
+	result := make([]map[string]interface{}, resultLength, resultLength)
+	for i, hit := range secondHitsJson {
+    hitBytes, errJson := json.Marshal(hit["_source"].(map[string]interface{}))
+    if errJson != nil {
+      fmt.Println(errJson)
+    }
+
+		var data map[string]interface{}
+		err := json.Unmarshal(hitBytes, &data)
+		if err != nil {
+			return resultMembers{}, err
+		}
+		result[i] = data
+	}
+	member := resultMembers{Data: result, TotalHits: totalHits}
+
+	return member, err
 }
 
 func writeError(w http.ResponseWriter, status int, err error) {
