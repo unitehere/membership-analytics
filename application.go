@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"github.com/dynamic-querying"
 
+	"github.com/unitehere/membership-analytics/dynamic-querying"
 	"github.com/unitehere/membership-analytics/pkg/handlers"
 
 	"github.com/go-chi/chi"
