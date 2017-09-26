@@ -82,10 +82,13 @@ func Client() (Service, error) {
 func (s *service) SearchSSN(ssnQuery SSNQuery) (Member, error) {
 	ctx := context.Background()
 
-	query := elastic.NewMatchQuery("demographics.ssn", ssnQuery.SSN).Fuzziness("AUTO")
+	query := elastic.NewBoolQuery()
+	query = query.Must(elastic.NewMatchQuery("demographics.ssn", ssnQuery.SSN).Fuzziness("1"))
+	query = query.Should(elastic.NewTermQuery("demographics.ssn.raw", ssnQuery.SSN).Boost(10.0))
 
 	searchResult, err := s.client.Search().
 		Index(config.Values.Index).
+		Size(20).
 		Query(query).
 		Pretty(true).
 		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("imis_id")).
