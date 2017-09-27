@@ -12,6 +12,7 @@ func TestInit(t *testing.T) {
 	assert.NotEmpty(t, Values.ElasticUsername)
 	assert.NotEmpty(t, Values.ElasticPassword)
 	assert.NotEmpty(t, Values.Index)
+	assert.NotEmpty(t, Values.Authorization)
 }
 
 func TestGetFilePath(t *testing.T) {

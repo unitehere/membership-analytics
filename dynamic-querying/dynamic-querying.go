@@ -9,6 +9,7 @@ import (
   "github.com/Jeffail/gabs"
   "net/http"
   "strings"
+  "github.com/unitehere/membership-analytics/config"
 )
 
 type queryConfigField struct {
@@ -113,9 +114,11 @@ func queryElasticService(queryBody string) (res ResponseValues, err error) {
   elasticHttp := &http.Client{}
   bodyReader := strings.NewReader(queryBody)
 
-  req, err := http.NewRequest("POST", "https://elasticsearch.unitehere.org:9200/members/_search", bodyReader)
+  elasticUrl := config.Values.ElasticURL + "/" + config.Values.Index + "/_search"
+
+  req, err := http.NewRequest("POST", elasticUrl, bodyReader)
   req.Header.Add("Content-Type", "application/json")
-  req.Header.Add("Authorization","Basic bWVtYmVyc2hpcF9hbmFseXRpY3M6ckdjbkJqeHhZZzJvSlg=")
+  req.Header.Add("Authorization", config.Values.Authorization)
   resp, err := elasticHttp.Do(req)
 
   defer resp.Body.Close()
