@@ -45,9 +45,15 @@ func SearchMember(w http.ResponseWriter, r *http.Request) {
   // Decodes the request body
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err)
+		writeCustomError(w, http.StatusBadRequest, "Invalid request data format")
 		return
 	}
+
+  validated := validateRequestData(data)
+  if !validated {
+    writeCustomError(w, http.StatusBadRequest, "Invalid request data format")
+    return
+  }
 
   enc := json.NewEncoder(w)
   enc.SetIndent("", "    ")
@@ -55,14 +61,14 @@ func SearchMember(w http.ResponseWriter, r *http.Request) {
   // Uses request body data to build the elastic query body
 	elasticQueryBody, err := buildElasticQuery(data)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err)
+		writeGenericError(w, http.StatusBadRequest, err)
 		return
 	}
 
   // Queries the elastic service
   payload, err := queryElasticService(elasticQueryBody)
   if err != nil {
-    writeError(w, http.StatusBadRequest, err)
+    writeGenericError(w, http.StatusBadRequest, err)
     return
   }
 
@@ -107,6 +113,34 @@ func buildElasticQuery(req []SearchRequest) (elasticQueryString string, err erro
   finalElasticQuery.Set(queryFieldJson.Data(), baseQueryPath...)
 
   return finalElasticQuery.String(), nil
+}
+
+func validateRequestData(req []SearchRequest) (validated bool) {
+  // Checks if empty array is sent
+  if len(req) == 0 {
+    return false
+  }
+
+  configurationInitial, _ := loadSearchTermConfigurations()
+  configurationBytes, _ := json.Marshal(configurationInitial)
+  configuration, _ := gabs.ParseJSON(configurationBytes)
+
+  for _, reqRow := range req {
+    fmt.Println(reqRow.Field_name)
+    // Checks if value or field_name is an empty string
+    // This also "indirectly" checks that the JSON fields were spelled correctly
+    if strings.TrimSpace(reqRow.Field_name) == "" || strings.TrimSpace(reqRow.Value) == "" {
+      return false
+    }
+
+    // Ensures that each "Field_name" matches a field in the query-config.json file
+    if !configuration.Exists(reqRow.Field_name) {
+      return false
+    }
+
+  }
+
+  return true
 }
 
 func queryElasticService(queryBody string) (res ResponseValues, err error) {
@@ -183,7 +217,7 @@ func incorporateJSON(finalJsonObject **gabs.Container, configField queryConfigFi
 
 func loadSearchTermConfigurations() (res map[string]interface{}, err error) {
 
-	rawJSONBytes, err := LoadJSONFileBytes("./dynamic-querying/config/query-config.json")
+	rawJSONBytes, err := loadJSONFileBytes("./dynamic-querying/config/query-config.json")
 	if err != nil {
 		log.Fatal(err)
     return nil, err
@@ -205,7 +239,7 @@ func parseFieldConfiguration(req map[string]interface{}) (res queryConfigField, 
   return jsonOutput, nil
 }
 
-func LoadJSONFileBytes(relFilePath string) (rawFile []byte, err error) {
+func loadJSONFileBytes(relFilePath string) (rawFile []byte, err error) {
   absPath, err := filepath.Abs(relFilePath)
   if err != nil {
     log.Fatal(err)
@@ -253,7 +287,12 @@ func transformSearchResults(searchResult map[string]interface{}) (resultMembers,
 	return member, err
 }
 
-func writeError(w http.ResponseWriter, status int, err error) {
+func writeGenericError(w http.ResponseWriter, status int, err error) {
 	w.WriteHeader(status)
 	w.Write([]byte(err.Error()))
+}
+
+func writeCustomError(w http.ResponseWriter, status int, errString string) {
+  w.WriteHeader(status)
+  w.Write([]byte(errString))
 }
