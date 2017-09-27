@@ -5,6 +5,7 @@ import (
   "io/ioutil"
   "log"
   "encoding/json"
+  "encoding/base64"
   "path/filepath"
   "github.com/Jeffail/gabs"
   "net/http"
@@ -126,7 +127,6 @@ func validateRequestData(req []SearchRequest) (validated bool) {
   configuration, _ := gabs.ParseJSON(configurationBytes)
 
   for _, reqRow := range req {
-    fmt.Println(reqRow.Field_name)
     // Checks if value or field_name is an empty string
     // This also "indirectly" checks that the JSON fields were spelled correctly
     if strings.TrimSpace(reqRow.Field_name) == "" || strings.TrimSpace(reqRow.Value) == "" {
@@ -150,9 +150,12 @@ func queryElasticService(queryBody string) (res ResponseValues, err error) {
 
   elasticUrl := config.Values.ElasticURL + "/" + config.Values.Index + "/_search"
 
+  auth := []byte(config.Values.ElasticUsername + ":" + config.Values.ElasticPassword)
+	authHeader := "Basic " + base64.StdEncoding.EncodeToString(auth)
+
   req, err := http.NewRequest("POST", elasticUrl, bodyReader)
   req.Header.Add("Content-Type", "application/json")
-  req.Header.Add("Authorization", config.Values.Authorization)
+  req.Header.Add("Authorization", authHeader)
   resp, err := elasticHttp.Do(req)
 
   defer resp.Body.Close()

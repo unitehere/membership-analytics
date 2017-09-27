@@ -2,6 +2,5 @@
   "ElasticURL": "localhost:9200",
   "ElasticUsername": "your_username",
   "ElasticPassword": "your_password",
-  "Index": "your-index",
-  "Authorization": "Basic bWVtYmVyc2hpcF9hbmFseXRpY3M6ckdjbkJqeHhZZzJvSlg="
+  "Index": "your-index"
 }

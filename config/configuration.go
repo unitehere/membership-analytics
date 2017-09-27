@@ -15,7 +15,6 @@ type Configuration struct {
 	ElasticUsername string
 	ElasticPassword string
 	Index           string
-	Authorization		string
 }
 
 // Values is the access point to the configuration values

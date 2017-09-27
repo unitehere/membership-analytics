@@ -5,8 +5,6 @@ This is the search and analytics repository for the membership system.
 # Getting Started
 1. Create a new `config.dev.json` and `config.prod.json` from `config.example.json`
 2. Make sure you correctly populate the fields on the config files. Dev uses `members-test` as index as oppose to `members` index
-  - "Authorization" is the header used to interact with the elastic service
-    through the net/http library.
 3. Run `go run application.go` on your terminal
 4. For deployment, you must set the env variable of `ENV` to `production` or `prod` to use the correct config
 
