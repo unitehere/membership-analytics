@@ -20,8 +20,8 @@ var (
 
 // Service interface for all simple member searches
 type Service interface {
-	SearchSSN(ssnQuery SSNQuery) (Member, error)
-	SearchName(query NameQuery) (Member, error)
+	SearchSSN(ssnQuery SSNQuery, from int, size int) (Member, error)
+	SearchName(query NameQuery, from int, size int) (Member, error)
 }
 
 type service struct {
@@ -38,11 +38,15 @@ type Member struct {
 type NameQuery struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
+	FromValue string `json:"from"`
+	SizeValue string `json:"size"`
 }
 
 // SSNQuery is used in SearchSSN
 type SSNQuery struct {
-	SSN string `json:"ssn"`
+	SSN       string `json:"ssn"`
+	FromValue string `json:"from"`
+	SizeValue string `json:"size"`
 }
 
 // Validate validates that either firstName or lastName exists
@@ -53,12 +57,32 @@ func (t NameQuery) Validate() error {
 	return nil
 }
 
+// From returns the from value of the query
+func (t NameQuery) From() string {
+	return t.FromValue
+}
+
+// Size returns the size value of the query
+func (t NameQuery) Size() string {
+	return t.SizeValue
+}
+
 // Validate validates that an ssn of atleast length of 7 exists
 func (t SSNQuery) Validate() error {
 	if govalidator.IsNull(t.SSN) || govalidator.StringLength(t.SSN, "0", "7") {
 		return errInvalidSSN
 	}
 	return nil
+}
+
+// From returns the from value of the query
+func (t SSNQuery) From() string {
+	return t.FromValue
+}
+
+// Size returns the size value of the query
+func (t SSNQuery) Size() string {
+	return t.SizeValue
 }
 
 // Client inits a new client on initial call, and returns the initialized client subsequently
@@ -79,7 +103,7 @@ func Client() (Service, error) {
 }
 
 // SearchSSN takes in a ssn as a string and returns an *elastic.SearchResult or error
-func (s *service) SearchSSN(ssnQuery SSNQuery) (Member, error) {
+func (s *service) SearchSSN(ssnQuery SSNQuery, from int, size int) (Member, error) {
 	ctx := context.Background()
 
 	query := elastic.NewBoolQuery()
@@ -88,7 +112,8 @@ func (s *service) SearchSSN(ssnQuery SSNQuery) (Member, error) {
 
 	searchResult, err := s.client.Search().
 		Index(config.Values.Index).
-		Size(20).
+		From(from).
+		Size(size).
 		Query(query).
 		Pretty(true).
 		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("imis_id")).
@@ -115,7 +140,7 @@ func (s *service) SearchSSN(ssnQuery SSNQuery) (Member, error) {
 }
 
 // SearchName takes in a ssn as a string and returns an *elastic.SearchResult or error
-func (s *service) SearchName(query NameQuery) (Member, error) {
+func (s *service) SearchName(query NameQuery, from int, size int) (Member, error) {
 	ctx := context.Background()
 
 	elasticQuery := elastic.NewBoolQuery()
@@ -132,6 +157,8 @@ func (s *service) SearchName(query NameQuery) (Member, error) {
 
 	searchResult, err := s.client.Search().
 		Index(config.Values.Index).
+		From(from).
+		Size(size).
 		Query(elasticQuery).
 		FetchSourceContext(elastic.NewFetchSourceContext(true).Include("imis_id", "first_name", "last_name")).
 		Do(ctx)

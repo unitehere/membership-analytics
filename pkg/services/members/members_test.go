@@ -40,7 +40,7 @@ func TestSearchSSN(t *testing.T) {
 
 		// this method can take any arg, as long as a request is made, the response will be
 		// read from testCase.testResponsePath
-		actualResult, err := s.SearchSSN(SSNQuery{"placeholder"})
+		actualResult, err := s.SearchSSN(SSNQuery{SSN: "placeholder"}, 0, 10)
 		assert.NoError(t, err)
 
 		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)
@@ -81,7 +81,7 @@ func TestSearchName(t *testing.T) {
 		s, err := MockService(ts.URL)
 		assert.NoError(t, err)
 
-		actualResult, err := s.SearchName(NameQuery{})
+		actualResult, err := s.SearchName(NameQuery{}, 0, 10)
 		assert.NoError(t, err)
 
 		expectedResultBytes, err := ioutil.ReadFile(testCase.expectedResultPath)

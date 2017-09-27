@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/unitehere/membership-analytics/pkg/services/members"
 )
@@ -17,6 +18,8 @@ var (
 // interact with all other query structs with Validate
 type Query interface {
 	Validate() error
+	Size() string
+	From() string
 }
 
 // The ResponseValues type describes the structure of the all responses.
@@ -41,8 +44,7 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "    ")
 
-	ssnQuery := members.SSNQuery{SSN: (r.URL.Query()["q"][0])}
-	err := ssnQuery.Validate()
+	from, size, err := getWindowParamsFromURL(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		payload.Error = err.Error()
@@ -50,7 +52,16 @@ func GetSearchSSN(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	searchResult, err := membersService.SearchSSN(ssnQuery)
+	ssnQuery := members.SSNQuery{SSN: (r.URL.Query()["q"][0])}
+	err = ssnQuery.Validate()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
+		enc.Encode(payload)
+		return
+	}
+
+	searchResult, err := membersService.SearchSSN(ssnQuery, from, size)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
@@ -84,9 +95,61 @@ func PostSearchSSN(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	searchResult, err = membersService.SearchSSN(ssnQuery)
+	from, size, err := getWindowParamsFromQuery(ssnQuery)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
+		enc.Encode(payload)
+		return
+	}
+
+	searchResult, err = membersService.SearchSSN(ssnQuery, from, size)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
+		return
+	} else if searchResult.TotalHits > 0 {
+		payload.Members = &searchResult
+	} else {
+		payload.Error = errNoHits.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	enc.Encode(payload)
+}
+
+// GetSearchName returns a fuzzy matched array of imis_id given a name
+// r.Get("/name", handlers.GetSearchSSN)
+func GetSearchName(w http.ResponseWriter, r *http.Request) {
+	var (
+		nameQuery    members.NameQuery
+		searchResult members.Member
+		payload      ResponseValues
+	)
+
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "    ")
+
+	from, size, err := getWindowParamsFromURL(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
+		enc.Encode(payload)
+		return
+	}
+
+	nameQuery = members.NameQuery{FirstName: (r.URL.Query()["first_name"][0]), LastName: (r.URL.Query()["last_name"][0])}
+	err = nameQuery.Validate()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
+		enc.Encode(payload)
+		return
+	}
+
+	searchResult, err = membersService.SearchName(nameQuery, from, size)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
 		return
 	} else if searchResult.TotalHits > 0 {
 		payload.Members = &searchResult
@@ -118,7 +181,15 @@ func PostSearchName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	searchResult, err = membersService.SearchName(nameQuery)
+	from, size, err := getWindowParamsFromQuery(nameQuery)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		payload.Error = err.Error()
+		enc.Encode(payload)
+		return
+	}
+
+	searchResult, err = membersService.SearchName(nameQuery, from, size)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
@@ -139,6 +210,53 @@ func decodeAndValidate(r *http.Request, q Query) error {
 	}
 	defer r.Body.Close()
 	return q.Validate()
+}
+
+func getWindowParamsFromURL(r *http.Request) (from int, size int, err error) {
+	err = nil
+
+	values := r.URL.Query()
+	if fromValues, found := values["from"]; found {
+		from, err = strconv.Atoi(fromValues[0])
+		if err != nil {
+			return 0, 0, err
+		}
+	} else {
+		from = 0
+	}
+	if sizeValues, found := values["size"]; found {
+		size, err = strconv.Atoi(sizeValues[0])
+		if err != nil {
+			return 0, 0, err
+		}
+	} else {
+		size = 10
+	}
+
+	return from, size, err
+}
+
+func getWindowParamsFromQuery(q Query) (from int, size int, err error) {
+	err = nil
+
+	if q.From() != "" {
+		from, err = strconv.Atoi(q.From())
+		if err != nil {
+			return 0, 0, err
+		}
+	} else {
+		from = 0
+	}
+	if q.Size() != "" {
+		size, err = strconv.Atoi(q.Size())
+		if err != nil {
+			return 0, 0, err
+		}
+	} else {
+		size = 10
+	}
+
+	return from, size, err
 }
 
 func writeError(w http.ResponseWriter, status int, err error) {
