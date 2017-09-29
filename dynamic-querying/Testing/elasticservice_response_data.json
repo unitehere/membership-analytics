@@ -1,0 +1,40 @@
+[
+  {
+    "name": "requestInvalid_DataNotArray",
+    "data": null,
+    "total_hits": 0
+  },
+  {
+    "name": "requestInvalid_PropertySpelledWrong",
+    "data": null,
+    "total_hits": 0
+  },
+  {
+    "name": "requestInvalid_FieldNameSpelledWrong",
+    "data": null,
+    "total_hits": 0
+  },
+  {
+    "name": "requestInvalid_FieldValueBlank",
+    "data": null,
+    "total_hits": 0
+  },
+  {
+    "name": "requestValid_SingleResult",
+    "data": [ { "first_name": "Maria", "last_name": "Martinez" } ],
+    "total_hits": 1
+  },
+  {
+    "name": "requestValid_MultipleResult",
+    "data": [
+      { "first_name": "Mark", "last_name": "Martin" },
+      { "first_name": "Test", "last_name": "Person" }
+    ],
+    "total_hits": 2
+  },
+  {
+    "name": "requestValid_NoResult",
+    "data": [],
+    "total_hits": 0
+  }
+]

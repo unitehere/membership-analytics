@@ -1,0 +1,120 @@
+[
+  {
+    "name": "requestInvalid_DataNotArray",
+    "details": {
+      "request": { "data": { "field_name": "last_name", "value": "Martinez" } },
+      "response": {
+        "status": 400,
+        "data": {
+          "Error": "Invalid request data format",
+          "Members": { "data": null, "total_hits": 0 }
+        }
+      }
+    }
+  },
+  {
+    "name": "requestInvalid_PropertySpelledWrong",
+    "details": {
+      "request": { "data": [ { "fieldname": "last_name", "value": "Martinez" } ] },
+      "response": {
+        "status": 400,
+        "data": {
+          "Error": "Invalid request data format",
+          "Members": { "data": null, "total_hits": 0 }
+        }
+      }
+    }
+  },
+  {
+    "name": "requestInvalid_FieldNameSpelledWrong",
+    "details": {
+      "request": { "data": [ { "field_name": "lastname", "value": "Martinez" } ] },
+      "response": {
+        "status": 400,
+        "data": {
+          "Error": "Invalid request data format",
+          "Members": { "data": null, "total_hits": 0 }
+        }
+      }
+    }
+  },
+  {
+    "name": "requestInvalid_FieldValueBlank",
+    "details": {
+      "request": { "data": [ { "field_name": "last_name", "value": " " } ] },
+      "response": {
+        "status": 400,
+        "data": {
+          "Error": "Invalid request data format",
+          "Members": { "data": null, "total_hits": 0 }
+        }
+      }
+    }
+  },
+  {
+    "name": "requestValid_SingleResult",
+    "details": {
+      "request": {
+        "data": [
+          { "field_name": "last_name", "value": "Martinez" },
+        	{ "field_name": "first_name", "value": "Maria" }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "data": {
+          "Error": "",
+          "Members": {
+            "data": [ { "first_name": "Maria", "last_name": "Martinez" } ],
+            "total_hits": 1
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "requestValid_MultipleResult",
+    "details": {
+      "request": {
+        "data": [
+          { "field_name": "last_name", "value": "Martinez" },
+          { "field_name": "first_name", "value": "Maria" }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "data": {
+          "Error": "",
+          "Members": {
+            "data": [
+              { "first_name": "Mark", "last_name": "Martin" },
+              { "first_name": "Test", "last_name": "Person" }
+            ],
+            "total_hits": 2
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "requestValid_NoResult",
+    "details": {
+      "request": {
+        "data": [
+          { "field_name": "last_name", "value": "Martinez" },
+          { "field_name": "first_name", "value": "Maria" }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "data": {
+          "Error": "",
+          "Members": {
+            "data": [],
+            "total_hits": 0
+          }
+        }
+      }
+    }
+  }
+]

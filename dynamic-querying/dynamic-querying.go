@@ -39,37 +39,45 @@ type resultMembers struct {
 	TotalHits int64                    `json:"total_hits"`
 }
 
+type elasticHttpInterface interface {
+  QueryElasticService(queryBody string) (ResponseValues, error)
+}
+
+var elasticService elasticHttpInterface
+
 // Handles the POST request for member search
 func SearchMember(w http.ResponseWriter, r *http.Request) {
 	var data []SearchRequest
-
-  // Decodes the request body
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		writeCustomError(w, http.StatusBadRequest, "Invalid request data format")
-		return
-	}
-
-  validated := validateRequestData(data)
-  if !validated {
-    writeCustomError(w, http.StatusBadRequest, "Invalid request data format")
-    return
-  }
+  var payload ResponseValues
 
   enc := json.NewEncoder(w)
   enc.SetIndent("", "    ")
 
+  // Decodes the request body
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+    writeError(w, &enc, &payload, http.StatusBadRequest, "Invalid request data format")
+    return
+	}
+
+  // Validates the incoming request data
+  validated := validateRequestData(data)
+  if !validated {
+    writeError(w, &enc, &payload, http.StatusBadRequest, "Invalid request data format")
+    return
+  }
+
   // Uses request body data to build the elastic query body
 	elasticQueryBody, err := buildElasticQuery(data)
 	if err != nil {
-		writeGenericError(w, http.StatusBadRequest, err)
+    writeError(w, &enc, &payload, http.StatusBadRequest, err.Error())
 		return
 	}
 
   // Queries the elastic service
-  payload, err := queryElasticService(elasticQueryBody)
+  payload, err = elasticService.QueryElasticService(elasticQueryBody)
   if err != nil {
-    writeGenericError(w, http.StatusBadRequest, err)
+    writeError(w, &enc, &payload, http.StatusBadRequest, payload.Error)
     return
   }
 
@@ -143,8 +151,8 @@ func validateRequestData(req []SearchRequest) (validated bool) {
   return true
 }
 
-func queryElasticService(queryBody string) (res ResponseValues, err error) {
-
+func QueryElasticService(queryBody string) (res ResponseValues, err error) {
+  var payload ResponseValues
   elasticHttp := &http.Client{}
   bodyReader := strings.NewReader(queryBody)
 
@@ -154,14 +162,24 @@ func queryElasticService(queryBody string) (res ResponseValues, err error) {
 	authHeader := "Basic " + base64.StdEncoding.EncodeToString(auth)
 
   req, err := http.NewRequest("POST", elasticUrl, bodyReader)
+  if err != nil {
+    payload.Error = err.Error()
+    return payload, err
+  }
   req.Header.Add("Content-Type", "application/json")
   req.Header.Add("Authorization", authHeader)
+
   resp, err := elasticHttp.Do(req)
+  if err != nil {
+    payload.Error = err.Error()
+    return payload, err
+  }
 
   defer resp.Body.Close()
   contents, err := ioutil.ReadAll(resp.Body)
   if err != nil {
-    return ResponseValues{}, err
+    payload.Error = err.Error()
+    return payload, err
   }
 
   var contentsJson map[string]interface{}
@@ -169,10 +187,10 @@ func queryElasticService(queryBody string) (res ResponseValues, err error) {
 
   results, err := transformSearchResults(contentsJson)
   if err != nil {
-    return ResponseValues{}, err
+    payload.Error = err.Error()
+    return payload, err
   }
 
-  var payload ResponseValues
   payload.Members = results
   payload.Error = ""
 
@@ -220,7 +238,7 @@ func incorporateJSON(finalJsonObject **gabs.Container, configField queryConfigFi
 
 func loadSearchTermConfigurations() (res map[string]interface{}, err error) {
 
-	rawJSONBytes, err := loadJSONFileBytes("./dynamic-querying/config/query-config.json")
+	rawJSONBytes, err := loadJSONFileBytes("./config/query-config.json")
 	if err != nil {
 		log.Fatal(err)
     return nil, err
@@ -290,12 +308,9 @@ func transformSearchResults(searchResult map[string]interface{}) (resultMembers,
 	return member, err
 }
 
-func writeGenericError(w http.ResponseWriter, status int, err error) {
-	w.WriteHeader(status)
-	w.Write([]byte(err.Error()))
-}
-
-func writeCustomError(w http.ResponseWriter, status int, errString string) {
+func writeError(w http.ResponseWriter, enc **json.Encoder, payload *ResponseValues, status int, errString string) {
   w.WriteHeader(status)
-  w.Write([]byte(errString))
+  (*payload).Error = errString
+  (*enc).Encode((*payload))
+  // w.Write([]byte(errString))
 }
