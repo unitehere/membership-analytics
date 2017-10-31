@@ -138,7 +138,7 @@ SELECT n.id, STUFF(
               , 1, 2, '') AS demographic_object
 
 FROM dbo.Name n
-WHERE n.Member_Type = 'M'
+WHERE n.Member_Type = 'NM' OR n.Member_Type = 'LM' OR n.Member_Type = 'REG'
 ORDER BY n.id
 
 
