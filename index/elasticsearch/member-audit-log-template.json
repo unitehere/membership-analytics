@@ -1,0 +1,42 @@
+// PUT _template/member_template
+{
+  "template": "member-audit-logs",
+  "mappings": {
+    "member-audit-log": {
+      "properties": {
+        "@timestamp" : {
+          "type" : "date",
+          "format" : "strict_date_optional_time||epoch_millis"
+        },
+        "@version" : {
+          "type" : "keyword"
+        },
+        "audit_log_id": { "type": "long" },
+        "old_value": {
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "new_value": {
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "log_type": { "type": "keyword" },
+        "imis_id": { "type": "keyword" },
+        "imis_seqn": { "type": "integer" },
+        "entity": { "type": "keyword" },
+        "property": { "type": "keyword" },
+        "audit_date": { "type": "text" },
+        "ssn_encrypted": { "type": "boolean" }
+      }
+    }
+  }
+}
+

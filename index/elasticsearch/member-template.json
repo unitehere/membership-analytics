@@ -33,7 +33,7 @@
         "chapter": { "type": "keyword" },
         "company": { "type": "keyword" },
         "designation": { "type": "keyword" },
-        "first_name": { 
+        "first_name": {
           "type": "text",
           "fields": {
             "phonetic": {
@@ -150,5 +150,5 @@
         }
       }
     }
-  }  
+  }
 }
