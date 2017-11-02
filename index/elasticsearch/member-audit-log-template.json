@@ -33,7 +33,9 @@
         "imis_seqn": { "type": "integer" },
         "entity": { "type": "keyword" },
         "property": { "type": "keyword" },
-        "audit_date": { "type": "text" },
+        "audit_date": {
+          "type":   "date"
+        },
         "ssn_encrypted": { "type": "boolean" }
       }
     }
