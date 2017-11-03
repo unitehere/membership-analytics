@@ -1,3 +1,4 @@
+# SSN Class
 class SSN
   attr_accessor :decrypted
   attr_reader :id, :encrypted
