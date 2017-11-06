@@ -39,8 +39,8 @@ def decrypt_and_replace
                     doc['_source']['old_value'],
                     doc['_source']['new_value'])
   end
-  decrypt_audit_logs(initial_batch)
-  # replace_ssns(initial_batch)
+  initial_batch = decrypt_audit_logs(initial_batch)
+  replace_audit_logs(initial_batch)
 
   # Call the `scroll` API until empty results are returned
   while (response = ES_CLIENT.scroll(scroll_id: response['_scroll_id'],
@@ -51,8 +51,8 @@ def decrypt_and_replace
                       doc['_source']['old_value'],
                       doc['_source']['new_value'])
     end
-    decrypt_audit_logs(next_batch)
-    # replace_ssns(next_batch)
+    next_batch = decrypt_audit_logs(next_batch)
+    replace_audit_logs(next_batch)
   end
 end
 
