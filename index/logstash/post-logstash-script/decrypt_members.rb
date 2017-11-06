@@ -9,7 +9,7 @@ require_relative 'models/ssn'
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/AbcSize
 
-CONFIG = YAML.safe_load(File.read('config.yml'))
+CONFIG = YAML.load(File.read('config.yml'))
 
 ES_CLIENT = Elasticsearch::Client.new(CONFIG['es_config'])
 INDEX = 'members-' + Date.today.strftime('%Y.%m.%d') # eg "members-2017.09.06"

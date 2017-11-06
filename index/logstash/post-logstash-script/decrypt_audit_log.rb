@@ -9,7 +9,7 @@ require_relative 'models/ssn_audit_log'
 # rubocop:disable Metrics/MethodLength
 # rubocop:disable Metrics/AbcSize
 
-CONFIG = YAML.safe_load(File.read('config.yml'))
+CONFIG = YAML.load(File.read('config.yml'))
 
 ES_CLIENT = Elasticsearch::Client.new(CONFIG['es_config'])
 INDEX = 'member-audit-logs'.freeze
@@ -58,7 +58,7 @@ end
 
 ## takes in an array of SSN and decrypt each encrypted ssn
 def decrypt_audit_logs(audit_logs)
-  old_values_payload = ssns.map(&:encrypted_old_value).reject(&:empty?)
+  old_values_payload = audit_logs.map(&:encrypted_old_value).reject(&:empty?)
   decrypted_data = JSON.parse(
     Manticore.post('https://fpe.unitehere.org/v1/ark/ff1/decrypt',
                    body: JSON.generate(values: old_values_payload),
@@ -70,7 +70,7 @@ def decrypt_audit_logs(audit_logs)
     end
   end
 
-  new_values_payload = ssns.map(&:encrypted_new_value).reject(&:empty?)
+  new_values_payload = audit_logs.map(&:encrypted_new_value).reject(&:empty?)
   decrypted_data = JSON.parse(
     Manticore.post('https://fpe.unitehere.org/v1/ark/ff1/decrypt',
                    body: JSON.generate(values: new_values_payload),
