@@ -1,0 +1,26 @@
+{
+    "query": {
+        "bool": {
+            "should": [
+                {
+                    "fuzzy": {
+                        "last_name": "foobar"
+                    }
+                }
+            ],
+            "must": [
+                {
+                    "match": {
+                        "last_name.phonetic": {
+                            "query": "foobar",
+                            "boost": 10,
+                            "fuzziness": 1
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "min_score": 2,
+    "size": 200
+}

@@ -1,0 +1,15 @@
+{
+    "query": {
+        "bool": {
+            "should": [
+                {
+                    "match": {
+                        "first_name.phonetic": "foobar"
+                    }
+                }
+            ]
+        }
+    },
+    "min_score": 6,
+    "size": 200
+}
