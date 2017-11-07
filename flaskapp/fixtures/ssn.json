@@ -1,0 +1,20 @@
+{
+    "query": {
+        "bool": {
+            "should": [
+                {
+                    "wildcard": {
+                        "demographics.ssn": "*foobar*"
+                    }
+                },
+                {
+                    "fuzzy": {
+                        "demographics.ssn": "foobar"
+                    }
+                }
+            ]
+        }
+    },
+    "min_score": 2,
+    "size": 200
+}
