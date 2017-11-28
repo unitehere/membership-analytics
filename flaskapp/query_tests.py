@@ -6,13 +6,24 @@ from query import SearchClient
 
 term = 'foobar'
 
-
 class TestSearch(TestCase):
     def setUp(self):
         self.search = SearchClient(app)
 
     def _load(self, name):
         return load(open('fixtures/%s.json' % name))
+
+    def test_from(self):
+        self.search.set_from('')
+        self.assertFalse('from' in self.search._search.to_dict())
+        self.search.set_from(133)
+        self.assertEquals(self.search._search.to_dict()['from'], 133)
+
+    def test_size(self):
+        self.search.set_size('')
+        self.assertFalse('size' in self.search._search.to_dict())
+        self.search.set_size(200)
+        self.assertEquals(self.search._search.to_dict()['size'], 200)
 
     def test_classification(self):
         self.search.classification(term)

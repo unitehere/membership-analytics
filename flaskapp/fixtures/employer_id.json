@@ -11,5 +11,5 @@
         }
     },
     "min_score": 1,
-    "size": 200
-}
+    "timeout": "30s"
+  }

@@ -7,12 +7,13 @@ from elasticsearch_dsl.query import Fuzzy, Match, Wildcard, Bool
 class SearchClient:
     extra = {
         'min_score': 0,
-        'size': 200,
+        'timeout': '30s',
     }
 
     def __init__(self, app):
         self.app = app
-        self._search = Search(using=app.es, index=app.config['ELASTICSEARCH_INDEX'])
+        self._search = Search(
+            using=app.es, index=app.config['ELASTICSEARCH_INDEX'])
         self._search = self._search.extra(**self.extra)
 
     def execute(self):
@@ -21,11 +22,20 @@ class SearchClient:
     def debug(self):
         return json.dumps(self._search.to_dict(), indent=4, sort_keys=False)
 
+    def set_from(self, from_value):
+        if str(from_value):
+            self._search._extra['from'] = from_value
+
+    def set_size(self, size):
+        if str(size):
+            self._search._extra['size'] = size
+
     def last_name(self, term):
         self._search._extra['min_score'] += 2
         self._search = self._search.query(Bool(
             should=[Fuzzy(last_name=term)],
-            must=[Match(last_name__phonetic={'query': term, 'boost': 10, 'fuzziness': 1})]
+            must=[Match(last_name__phonetic={
+                        'query': term, 'boost': 10, 'fuzziness': 1})]
         ))
 
     def ssn(self, term):
