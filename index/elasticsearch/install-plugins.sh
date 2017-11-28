@@ -13,7 +13,7 @@ fi
 
 cd $ES_PLUGIN_DIR
 ./elasticsearch-plugin install analysis-phonetic
-./elasticsearch-plugin install x-pack
+./elasticsearch-plugin install -b com.floragunn:search-guard-5:5.6.3-16
 
 cd -
 
