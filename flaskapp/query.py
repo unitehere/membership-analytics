@@ -1,10 +1,9 @@
 import json
 
 from elasticsearch_dsl import Search
-from elasticsearch_dsl.query import Fuzzy, Match, Wildcard, Bool
+from elasticsearch_dsl.query import Fuzzy, Match, MultiMatch, Wildcard, Bool
 
-
-class SearchClient:
+class MemberSearchClient:
     extra = {
         'min_score': 0,
         'timeout': '30s',
@@ -13,7 +12,7 @@ class SearchClient:
     def __init__(self, app):
         self.app = app
         self._search = Search(
-            using=app.es, index=app.config['ELASTICSEARCH_INDEX'])
+            using=app.es, index=app.config['ELASTICSEARCH_MEMBERS_INDEX'])
         self._search = self._search.extra(**self.extra)
 
     def execute(self):
@@ -67,3 +66,39 @@ class SearchClient:
     def state_province(self, term):
         self._search._extra['min_score'] += 2
         self._search = self.should_match(addresses__state_province=term)
+
+class HistorySearchClient:
+    extra = {
+        'timeout': '30s',
+    }
+
+    def __init__(self, app):
+        self.app = app
+        self._search = Search(
+            using=app.es, index=app.config['ELASTICSEARCH_HISTORY_INDEX'])
+        self._search = self._search.extra(**self.extra)
+
+    def execute(self):
+        return self._search.execute()
+
+    def debug(self):
+        return json.dumps(self._search.to_dict(), indent=4, sort_keys=False)
+
+    def set_from(self, from_value):
+        if str(from_value):
+            self._search._extra['from'] = from_value
+
+    def set_size(self, size):
+        if str(size):
+            self._search._extra['size'] = size
+
+    def ssn(self, term):
+        self._search = self._search.query(Bool(must=[
+            Match(ssn_decrypted='true'),
+            Match(entity='UH_DEMO'),
+            Match(property='SSN'),
+            MultiMatch(query=term, fields=['old_value', 'new_value'])
+        ]))
+
+    def should_match(self, **kwargs):
+        return self._search.query(Bool(should=[Match(**kwargs)]))

@@ -1,0 +1,24 @@
+{
+  "query": {
+      "bool": {
+          "must": [
+            {
+              "match": {"ssn_decrypted": "true"}
+            },
+            {
+              "match": {"entity": "UH_DEMO"}
+            },
+            {
+              "match": {"property": "SSN"}
+            },
+            {
+              "multi_match":
+              {
+                "fields": ["old_value", "new_value"],
+                "query": "foobar"}
+              }
+          ]
+      }
+  },
+  "timeout": "30s"
+}

@@ -5,7 +5,7 @@ from elasticsearch import Elasticsearch
 from flask_cors import CORS
 from werkzeug.utils import ImportStringError
 
-from query import SearchClient
+from query import MemberSearchClient, HistorySearchClient
 
 app = Flask(__name__)
 CORS(app)
@@ -23,8 +23,18 @@ def health_check():
 
 
 @app.route('/search/<term>')
-def search(term):
-    search = SearchClient(app)
+def search_members(term):
+    search = MemberSearchClient(app)
+    search.set_from(request.args.get('from', ''))
+    search.set_size(request.args.get('size', ''))
+    search_func = getattr(search, term)
+    search_func(request.args.get('q', ''))
+    response = search.execute()
+    return jsonify(response.hits.hits)
+
+@app.route('/history/search/<term>')
+def search_history(term):
+    search = HistorySearchClient(app)
     search.set_from(request.args.get('from', ''))
     search.set_size(request.args.get('size', ''))
     search_func = getattr(search, term)
