@@ -19,7 +19,7 @@ app.es = Elasticsearch(app.config['ELASTICSEARCH_HOST'])
 
 @app.route('/health')
 def health_check():
-    return 'OK'
+    return 'Service is up and running.'
 
 
 @app.route('/search/<term>')
@@ -27,6 +27,8 @@ def search(term):
     search = SearchClient(app)
     search_func = getattr(search, term)
     search_func(request.args.get('q', ''))
-    app.logger.debug(search.debug())
     response = search.execute()
     return jsonify(response.hits.hits)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')

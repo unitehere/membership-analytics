@@ -1,7 +1,7 @@
 from json import load
 from unittest import TestCase
 
-from app import app
+from application import app
 from query import SearchClient
 
 term = 'foobar'

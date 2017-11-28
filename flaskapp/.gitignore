@@ -1,3 +1,9 @@
 *.py[co]
 __pycache__
+requirements.txt
 config/local.py
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
