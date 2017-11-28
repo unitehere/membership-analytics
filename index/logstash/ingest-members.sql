@@ -10,9 +10,9 @@ SELECT n.id, STUFF(
     CASE WHEN n1.TITLE IS NULL OR n1.TITLE = '' THEN '' ELSE '"title": "' + COALESCE(n1.TITLE,'') + '",' END +
     CASE WHEN n1.COMPANY IS NULL OR n1.COMPANY = '' THEN '' ELSE '"company": "' + STRING_ESCAPE(COALESCE(n1.COMPANY,''), 'json') + '",' END +
     CASE WHEN n1.PREFIX IS NULL OR n1.PREFIX = '' THEN '' ELSE '"prefix": "' + COALESCE(n1.PREFIX,'') + '",' END +
-    CASE WHEN n1.FIRST_NAME IS NULL OR n1.FIRST_NAME = '' THEN '' ELSE '"first_name": "' + COALESCE(n1.FIRST_NAME,'') + '",' END +
-    CASE WHEN n1.MIDDLE_NAME IS NULL OR n1.MIDDLE_NAME = '' THEN '' ELSE '"middle_name": "' + COALESCE(MIDDLE_NAME,'') + '",' END +
-    CASE WHEN n1.LAST_NAME IS NULL OR n1.LAST_NAME = '' THEN '' ELSE '"last_name": "' + COALESCE(n1.LAST_NAME,'') + '",' END +
+    CASE WHEN n1.FIRST_NAME IS NULL OR n1.FIRST_NAME = '' THEN '' ELSE '"first_name": "' + STRING_ESCAPE(COALESCE(n1.FIRST_NAME,''), 'json') + '",' END +
+    CASE WHEN n1.MIDDLE_NAME IS NULL OR n1.MIDDLE_NAME = '' THEN '' ELSE '"middle_name": "' + STRING_ESCAPE(COALESCE(MIDDLE_NAME,''), 'json') + '",' END +
+    CASE WHEN n1.LAST_NAME IS NULL OR n1.LAST_NAME = '' THEN '' ELSE '"last_name": "' + STRING_ESCAPE(COALESCE(n1.LAST_NAME,''), 'json') + '",' END +
     CASE WHEN n1.SUFFIX IS NULL OR n1.SUFFIX = '' THEN '' ELSE '"suffix": "' + COALESCE(n1.SUFFIX,'') + '",' END +
     CASE WHEN n1.DESIGNATION IS NULL OR n1.DESIGNATION = '' THEN '' ELSE '"designation": "' + COALESCE(n1.DESIGNATION,'') + '",' END +
     CASE WHEN n1.CHAPTER IS NULL OR n1.CHAPTER = '' THEN '' ELSE '"chapter": "' + COALESCE(n1.CHAPTER,'') + '",' END +
