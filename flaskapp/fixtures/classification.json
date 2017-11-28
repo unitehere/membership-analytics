@@ -1,0 +1,15 @@
+{
+    "query": {
+        "bool": {
+            "should": [
+                {
+                    "match": {
+                        "employers.classification": "foobar"
+                    }
+                }
+            ]
+        }
+    },
+    "min_score": 1,
+    "size": 200
+}
